@@ -9,6 +9,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.carousel import Carousel
+from kivy.uix.videoplayer import VideoPlayerAnnotation
+from kivy.uix.videoplayer import VideoPlayer
 
 from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
@@ -143,6 +145,7 @@ def auth():
 
 def draw_mbst_slider(component):
     carousel = Carousel(direction='right')
+    # TabbedPanel #??????
     
     if 'items' in component:
       for elem in component['items']:
@@ -157,6 +160,12 @@ def draw_mbst_slider(component):
     return carousel
 
 
+def draw_mbst_video_player(component):
+    # print("-component properties ['properties']['source'] ",component['properties']['source'])
+    # player = VideoPlayer(source='myvideo.avi', state='play',options={'eos': 'loop'}) #VideoPlayerAnnotation
+    player = VideoPlayer(source='myvideo.avi', state='play',options={'fit_mode': 'contain'})
+    return player
+
 def draw_mbst_button(component):
     btnSimple = Button(text=component['properties'].get('text', ""))
     # btn2e.bind(on_press=)
@@ -170,10 +179,22 @@ def draw_mbst_image(component):
     return aimg
     
 def draw_mbst_text(component):
-    textinput = TextInput(text=component['properties'].get('text', ""))
+    textinput = TextInput(text=component['properties'].get('text', ""), multiline=False)
     # btn2e.bind(focus=)
     # btn2e.bind(insert_text=)
     return textinput
+    
+def draw_mbst_text_area(component):
+    textinput = TextInput(text=component['properties'].get('text', ""), multiline=True)
+    # textinput.bind(on_text_validate=on_enter)
+    # textinput.bind(text=on_text)
+    return textinput
+
+def draw_mbst_link(component):
+    # widget = Label(text='Hello [ref=world]World[/ref]', markup=True)
+    widget = Label(text=component['properties'].get('text', ""), markup=True)
+    # widget.bind(on_ref_press=print_it)
+    return widget
     
 def draw_mbst_flexrow(component):
     layout = BoxLayout(orientation='vertical',spacing=10)
@@ -207,15 +228,23 @@ def processComponent(component):
         return draw_mbst_flexrow(el)
     if el['name'] == 'mbst-slider':
         return draw_mbst_slider(el)
+        
+    if 'items' in component:
+        print('has more items!!!')
+    
     if el['name'] == 'mbst-button':
         return draw_mbst_button(el)
     if el['name'] == 'mbst-text':
         return draw_mbst_text(el)
     if el['name'] == 'mbst-image':
         return draw_mbst_image(el)
-        
-    if 'items' in component:
-        print('has more items!!!')
+    if el['name'] == 'mbst-text-area':
+        return draw_mbst_text_area(el)
+    if el['name'] == 'mbst-link':
+        return draw_mbst_link(el)
+    if el['name'] == 'mbst-video-player':
+        return draw_mbst_video_player(el)
+
     
     print('name',el['name'])
     return False
