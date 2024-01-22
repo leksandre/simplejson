@@ -1,6 +1,6 @@
 import kivy
 kivy.require('1.0.7')
-from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId
+from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -11,10 +11,22 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.carousel import Carousel
 from kivy.uix.videoplayer import VideoPlayerAnnotation
 from kivy.uix.videoplayer import VideoPlayer
-
+from kivy.storage.jsonstore import JsonStore
 from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
 
+store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
+
+hashtags = []
+
+if store.exists('hashtags'):
+    hashtagsS =  store.get('hashtags')
+    print('-------------- hashtags exists:', hashtagsS)
+    hashtags = list(hashtagsS)
+    # store.delete('hashtags')
+
+    
+    
 from kivy.config import Config
 Config.set('graphics', 'width', '100')
 Config.set('graphics', 'height', '200')
@@ -34,6 +46,7 @@ import random
 import time
 import requests
 import json
+import html2text
 
 # config 
 execution_path = os.getcwd()
@@ -82,6 +95,11 @@ def simpleRequest(isGet = False, checkStruct = False, showresp = False, **params
         
         if r.status_code != 200:
             print('text:'+str(r.text)[0:2000])
+            try:
+                print(html2text.html2text(r.text))                     
+            except KeyError as e:
+                print(' not json as text KeyError  ' + str(e))
+            print('params',params)
             return False
         
         # d = json.JSONDecoder()
@@ -89,15 +107,22 @@ def simpleRequest(isGet = False, checkStruct = False, showresp = False, **params
         try:
             data = json.loads(r.text)
         except json.JSONDecodeError:
-            print(' not json 0 ' + str(r.text)[0:2000])
-            return 0
+            print(' not json 0 ' + str(r.text)[0:200])
+            try:
+                print(html2text.html2text(r.text))                     
+            except KeyError as e:
+                print(' not json as text KeyError  ' + str(e))
+            print('params',params)
+            return False
         
         if checkStruct:
             if not 'data' in data:
                 print(' not data 0 ' + str(data))
+                print('params',params)
                 return False
             if not 'meta' in data:
                 print(' not meta 0 ' + str(data))
+                print('params',params)
                 return False
             for dataList in data['data']:
                 print(' data[data] ',dataList)
@@ -249,8 +274,62 @@ def processComponent(component):
     print('name',el['name'])
     return False
 
+
+
+def getHashTags(screenId):
+    if screenId==0:
+        return {}
+    Headers = { 'Authorization' : "Bearer "+str(access_token), 'Content-Type':"application/json" }
+    json_details = {
+        "applicationId": "18",
+        "ids": [500],
+        "tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]
+    }
+    
+    maindata =  json.dumps(json_details) 
+    r = simpleRequest(url = urlD+url_hash_objects, headers=Headers, data=maindata) # example of body  --data-raw '{"ids":[500],"applicationId":18,"tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]}'
+    if not r:
+        return {}
+
+    # print(r)
+    data = r.json()
+    print(data)
+    print('len(data)',len(r.text))
+
+    if not 'data' in data:
+        print(' not data 1 ' + str(data))
+        return False
+
+    for object in data['data']:
+        attributes = object['attributes']
+        store.put('hashtags', name='Object', id=object['id'], **attributes)
+    # store.put('hashtags', name='Object', org='kivy')
+    # store['hashtags'] = {'name': 'Mathieu'}
+    # hashtags.append
+    
+    json_details = {"applicationId": 18, "objectId": 500, "extraParams": {"Screen": {"id": 49}, "Globals": {"applicationId": 18, "objectId": 500}}, "tags": [{"tag": "#EventsFilter:MyGD:Data#", "objectId": 500, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": False}}, {"tag": "#EventsFilter:GD:Data#", "objectId": 500, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": True}}]}
+    
+    maindata =  json.dumps(json_details) 
+    
+    r = simpleRequest(url = urlD+url_hash_filters_events, headers=Headers, data=maindata)  # example of body  --data-raw '{"applicationId":18,"objectId":500,"extraParams":{"Tenant":{},"Application":{},"Screen":{"id":49,"ApplicationId":18,"SortOrder":0,"Name":"Home screen","UpdateDate":"2021-05-19 08:11:18.695368","CreateDate":"2021-05-19 08:11:18.695368","uuid":"ba1db960-178a-410c-833a-0d675e1e296b","LastModified":"2024-01-12 07:31:04.286629","ishomescreen":True,"name":"mbst-screen","aliasName":"Screen"},"Object":{"FirstName":"Aleksandr I","CompanyAccount":"0","Image":"https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/7/6361866df06e28611bb3a3e8bea8d15f.png","FacebookChannel":null,"ChromePush":null,"Points":"0","Range":"The Helpful Citizen"},"Variable":{"MenuMS":"0","MenuR":"0","MenuMKL":"0","ShowEdit":"0","HeartPopup":"20240122","PushWidget":"on"},"Payment":{},"Backendname":{"EditAct2#Loop:GD:backend@id#":"#Loop:GD:backend@ext_col_json:Message#"},"LastEvent":{},"Route":{"path":"/18/","query":{"appid":"18","screenid":"49","objid":"500","os":"ios"},"params":{"appid":"18"}},"Tax":{},"Globals":{"applicationId":18,"objectId":500}},"tags":[{"tag":"#EventsFilter:MyGD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":False}},{"tag":"#EventsFilter:GD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":True}}]}'
+    
+    if not r:
+        return {}
+
+    # print(r)
+    data = r.json()
+    print(r.text[0:200])
+    print('len(data)',len(r.text))
+    
+    return {}
+    
+    
+
+
+  
 def parseScreen(screen):
     layoutScreen = GridLayout(cols=1)
+    hashtags = getHashTags(screen.get("id", 0))
     for el in screen['attributes']['components']:
         foradding = processComponent(el)
         if foradding:
