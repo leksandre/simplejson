@@ -1,6 +1,6 @@
 import kivy
 kivy.require('1.0.7')
-from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events
+from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -15,25 +15,6 @@ from kivy.storage.jsonstore import JsonStore
 from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
 
-store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
-
-hashtags = []
-
-if store.exists('hashtags'):
-    hashtagsS =  store.get('hashtags')
-    print('-------------- hashtags exists:', hashtagsS)
-    hashtags = list(hashtagsS)
-    # store.delete('hashtags')
-
-    
-    
-from kivy.config import Config
-Config.set('graphics', 'width', '100')
-Config.set('graphics', 'height', '200')
-
-from kivy.core.window import Window
-Window.size = (600, 1000)
-
 # import cv2
 import sys
 # import m3u8
@@ -47,6 +28,69 @@ import time
 import requests
 import json
 import html2text
+import re
+
+store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
+
+hashtags = []
+
+if store.exists('#object#'):
+    hashtagsS =  store.get('#object#')
+    # print('-------------- hashtags exists:', hashtagsS)
+    print('-------------- object exists:', json.dumps(hashtagsS)[:500])
+    
+    # hashtags = list(hashtagsS)
+    
+    # for item in store.find(name='Object'):
+    #     print('data 0')
+    # for item in store.find(name='#EventsFilter:GD:Data#'):
+    #     print('data 1')
+    # for item in store.find(name='#EventsFilter:MyGD:Data#'):
+    #     print('data 2')
+
+
+for key, value in store.find():
+    print('-------- store item', key)
+    # store.delete(key)
+        
+def processHashtagData(data):
+    for element in data:
+        if 'type' in element:
+            if 'id' in element:
+                if 'attributes' in element:
+                    attributes = element['attributes']
+                    print('add'+element['type'],attributes)
+                    
+                    # store['hashtags_'+element['type']][element['type']] = {id:element['id'], **attributes}
+                    
+                    store.put('#'+(element['type']).lower()+'#', name=element['type'], id=element['id'], **attributes)
+
+        else:
+            if 'id' in element:
+                if 'attributes' in element:
+                    attributes = element['attributes']
+                    if 'tag' in attributes:
+                        # store['hashtags_'+attributes['tag']][attributes['tag']] = {data:attributes['data']}
+                        store.put((attributes['tag']).lower(), name=attributes['tag'], data=[attributes['data']])  
+                        
+                        # # store['hashtags'][attributes['tag']] = {data:{k: v for v, k in enumerate([attributes['data'][0]])} }
+                        # if len(attributes['data'])>0:
+                        #     store['hashtags'][attributes['tag']] = {data:[attributes['data'][0]] }
+                        # #  store.put('hashtags', name=attributes['tag'], data=[attributes['data'][0]])  
+                        # else:
+                        #  store.put('hashtags', name=attributes['tag'], data=[attributes['data']])  
+                            
+    
+    # for item in store.find():
+    #     print('tshirtmans item', item)
+    
+from kivy.config import Config
+Config.set('graphics', 'width', '100')
+Config.set('graphics', 'height', '400')
+
+from kivy.core.window import Window
+Window.size = (600, 1000)
+
 
 # config 
 execution_path = os.getcwd()
@@ -54,7 +98,16 @@ execution_path = os.getcwd()
 
 global access_token
 access_token = ''
+global refresh_token
+refresh_token = ''
 
+if store.exists('auth'):
+    auth = store.get('auth')
+    print('--------------  auth exist:', auth)
+    access_token =  auth['access_token']
+    refresh_token =  auth['refresh_token']
+
+    
 # get
 # curl 'https://viafdn-admin.mobsted.com/api/v8/screen?ApplicationId=18&page=1&pageSize=200&uni=1705579847214' \
     
@@ -93,6 +146,14 @@ def simpleRequest(isGet = False, checkStruct = False, showresp = False, **params
         
         print('status_code:'+str(r.status_code))
         
+        if r.status_code == 401:# if token expired
+            print('--------- try refresh token')
+            res_refresh = refresh_auth()
+            if not res_refresh:
+                res_auth = auth()
+                if res_auth:
+                    return simpleRequest(isGet, checkStruct, showresp, **params)
+            
         if r.status_code != 200:
             print('text:'+str(r.text)[0:2000])
             try:
@@ -147,8 +208,42 @@ def getScreens(tables=[]):
 
     return data
 
+def refresh_auth():
+    global access_token
+    global refresh_token
+    
+    if len(refresh_token)==0:
+        False
+        
+    url_e = urlD+(url_refresh.replace('ref_token',refresh_token))
+    
+    print('--------- try refresh token')
+    
+    r = simpleRequest(isGet=True, url = url_e)
+    data = r.json()
+    # print('data json 0',data)
+    if not 'access_token' in data:
+        print('!!! not access_token ' + str(data))
+        return False
+    try:
+        access_token = data['access_token']
+        refresh_token = data['refresh_token']
+        store.put('auth', 
+        access_token = data['access_token'],
+        refresh_token = data['refresh_token'])
+        
+        # print('tokens - ',data,access_token,refresh_token)
+    except KeyError as e:
+        print('!!! over KeyError 43 ' + str(e))
+        return False
+    return True
+    
 def auth():
     global access_token
+    global refresh_token
+    
+    if len(access_token)>0:
+        return True
     
     PARAMS = {'login':log_e,'password':pass_e}
     url_e = urlD+(url_a.replace('userLogin555',log_e)).replace('userPassword888',pass_e)
@@ -162,6 +257,9 @@ def auth():
     try:
         access_token = data['access_token']
         refresh_token = data['refresh_token']
+        store.put('auth', 
+        access_token = data['access_token'],
+        refresh_token = data['refresh_token'])
         # print('tokens - ',data,access_token,refresh_token)
     except KeyError as e:
         print('!!! over KeyError 43 ' + str(e))
@@ -200,13 +298,14 @@ def draw_mbst_button(component):
 def draw_mbst_image(component):
     # print("-component properties ['properties']['image']'url' ",component['properties']['image']['url'])
     # wimg = Image(source='mylogo.png')
+    
     aimg = AsyncImage(source='https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/20/20095bc04ac1dfe4b3337d10caa77ca9.png')
+    # aimg = AsyncImage(source=component['properties']['image']['url'])
     return aimg
     
 def draw_mbst_text(component):
-    textinput = TextInput(text=component['properties'].get('text', ""), multiline=False)
-    # btn2e.bind(focus=)
-    # btn2e.bind(insert_text=)
+    textinput = Label(text=component['properties'].get('text', ""))
+    # btn2e.bind(on_ref_press=)
     return textinput
     
 def draw_mbst_text_area(component):
@@ -237,6 +336,32 @@ def draw_mbst_flexrow(component):
     # layout.add_widget(Button(text=f'layout_n'))
     return layout
 
+def processHtOnComponent(component):
+    
+    text = json.dumps(component)
+    ht = extractHtFromDict(text)
+    
+    for h in ht:
+        # print('ht --',h)
+        p_ht = h.split(':')
+        if len(p_ht)>1:
+            if store.exists('#'+p_ht[0].lower()+'#'):
+                ht_v = store.get('#'+p_ht[0].lower()+'#')
+                if p_ht[1] in ht_v:
+                    print(h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
+                    text = text.replace('#'+h+'#',ht_v.get(p_ht[1]))
+
+    try:
+        componentNew = json.loads(text)
+        if componentNew:
+            # print(' ret new compotetn  ')
+            return componentNew                
+    except KeyError as e:
+        print(' not json as text KeyError  ' + str(e))
+                
+
+    return component
+    
 def processComponent(component):
 
     # for elem in component:
@@ -244,11 +369,14 @@ def processComponent(component):
     # print('-component properties',component['properties'])
         
     el = component
+    
     # print('css',el['css'])
     # print('config',el['config'])
     
-    
+    el = processHtOnComponent(el)#заменяем хештеги
+
         
+    # отрисовываем компоненты и возврщаем их вызвавшему родительскому компоненту
     if el['name'] == 'mbst-flexrow':
         return draw_mbst_flexrow(el)
     if el['name'] == 'mbst-slider':
@@ -276,60 +404,102 @@ def processComponent(component):
 
 
 
-def getHashTags(screenId):
+                     
+            
+
+def getHashTags(screenId, ht):
     if screenId==0:
         return {}
     Headers = { 'Authorization' : "Bearer "+str(access_token), 'Content-Type':"application/json" }
-    json_details = {
-        "applicationId": "18",
-        "ids": [500],
-        "tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]
-    }
     
-    maindata =  json.dumps(json_details) 
-    r = simpleRequest(url = urlD+url_hash_objects, headers=Headers, data=maindata) # example of body  --data-raw '{"ids":[500],"applicationId":18,"tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]}'
-    if not r:
-        return {}
+    objectHt = list(filter(lambda x: x.lower().startswith('object:'), ht))
+    if len(objectHt)>0:
+        fullHt = ["#"+str(x)+"#" for x in objectHt]
+        # print('objectHt',objectHt)
+        # print('fullHt',fullHt)
+        json_details = {
+            "applicationId": AppId,
+            "ids": [500],
+            "tags":fullHt
+            # "tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]
+        }
+        maindata =  json.dumps(json_details) 
+        r = simpleRequest(url = urlD+url_hash_objects, headers=Headers, data=maindata) # example of body  --data-raw '{"ids":[500],"applicationId":18,"tags":["#Object:FirstName#","#Object:CompanyAccount#","#Object:Image#"]}'
+        if not r:
+            return {}
 
-    # print(r)
-    data = r.json()
-    print(data)
-    print('len(data)',len(r.text))
+        # print(r)
+        data = r.json()
+        print(data)
+        print('len(data)',len(r.text))
+        if not 'data' in data:
+            print(' not data 1 ' + str(data))
+            return False
+        processHashtagData(data['data'])
 
-    if not 'data' in data:
-        print(' not data 1 ' + str(data))
-        return False
 
-    for object in data['data']:
-        attributes = object['attributes']
-        store.put('hashtags', name='Object', id=object['id'], **attributes)
     # store.put('hashtags', name='Object', org='kivy')
     # store['hashtags'] = {'name': 'Mathieu'}
     # hashtags.append
     
-    json_details = {"applicationId": 18, "objectId": 500, "extraParams": {"Screen": {"id": 49}, "Globals": {"applicationId": 18, "objectId": 500}}, "tags": [{"tag": "#EventsFilter:MyGD:Data#", "objectId": 500, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": False}}, {"tag": "#EventsFilter:GD:Data#", "objectId": 500, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": True}}]}
     
-    maindata =  json.dumps(json_details) 
-    
-    r = simpleRequest(url = urlD+url_hash_filters_events, headers=Headers, data=maindata)  # example of body  --data-raw '{"applicationId":18,"objectId":500,"extraParams":{"Tenant":{},"Application":{},"Screen":{"id":49,"ApplicationId":18,"SortOrder":0,"Name":"Home screen","UpdateDate":"2021-05-19 08:11:18.695368","CreateDate":"2021-05-19 08:11:18.695368","uuid":"ba1db960-178a-410c-833a-0d675e1e296b","LastModified":"2024-01-12 07:31:04.286629","ishomescreen":True,"name":"mbst-screen","aliasName":"Screen"},"Object":{"FirstName":"Aleksandr I","CompanyAccount":"0","Image":"https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/7/6361866df06e28611bb3a3e8bea8d15f.png","FacebookChannel":null,"ChromePush":null,"Points":"0","Range":"The Helpful Citizen"},"Variable":{"MenuMS":"0","MenuR":"0","MenuMKL":"0","ShowEdit":"0","HeartPopup":"20240122","PushWidget":"on"},"Payment":{},"Backendname":{"EditAct2#Loop:GD:backend@id#":"#Loop:GD:backend@ext_col_json:Message#"},"LastEvent":{},"Route":{"path":"/18/","query":{"appid":"18","screenid":"49","objid":"500","os":"ios"},"params":{"appid":"18"}},"Tax":{},"Globals":{"applicationId":18,"objectId":500}},"tags":[{"tag":"#EventsFilter:MyGD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":False}},{"tag":"#EventsFilter:GD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":True}}]}'
-    
-    if not r:
-        return {}
+    eventsFilterHt = list(filter(lambda x: x.lower().startswith('eventsfilter:'), ht))
+    if len(objectHt)>0:
+        fullHt = [ {"tag": "#"+str(x)+"#", "objectId": ObjectId, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": True}} for x in eventsFilterHt]
+        
+        json_details = {"applicationId": AppId, "objectId": ObjectId, "extraParams": {"Screen": {
+            "id": screenId}, "Globals": {"applicationId": AppId, "objectId": ObjectId}}, "tags": fullHt}
 
-    # print(r)
-    data = r.json()
-    print(r.text[0:200])
-    print('len(data)',len(r.text))
+        maindata =  json.dumps(json_details) 
+        
+        r = simpleRequest(url = urlD+url_hash_filters_events, headers=Headers, data=maindata)  # example of body  --data-raw '{"applicationId":18,"objectId":500,"extraParams":{"Tenant":{},"Application":{},"Screen":{"id":49,"ApplicationId":18,"SortOrder":0,"Name":"Home screen","UpdateDate":"2021-05-19 08:11:18.695368","CreateDate":"2021-05-19 08:11:18.695368","uuid":"ba1db960-178a-410c-833a-0d675e1e296b","LastModified":"2024-01-12 07:31:04.286629","ishomescreen":True,"name":"mbst-screen","aliasName":"Screen"},"Object":{"FirstName":"Aleksandr I","CompanyAccount":"0","Image":"https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/7/6361866df06e28611bb3a3e8bea8d15f.png","FacebookChannel":null,"ChromePush":null,"Points":"0","Range":"The Helpful Citizen"},"Variable":{"MenuMS":"0","MenuR":"0","MenuMKL":"0","ShowEdit":"0","HeartPopup":"20240122","PushWidget":"on"},"Payment":{},"Backendname":{"EditAct2#Loop:GD:backend@id#":"#Loop:GD:backend@ext_col_json:Message#"},"LastEvent":{},"Route":{"path":"/18/","query":{"appid":"18","screenid":"49","objid":"500","os":"ios"},"params":{"appid":"18"}},"Tax":{},"Globals":{"applicationId":18,"objectId":500}},"tags":[{"tag":"#EventsFilter:MyGD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":False}},{"tag":"#EventsFilter:GD:Data#","objectId":500,"pagination":{"page":1,"pageSize":10,"showButtonUp":False,"showInformer":True}}]}'
+        
+        if not r:
+            return {}
+
+        # print(r)
+        data = r.json()
+        print(r.text[0:200])
+        print('len(data)',len(r.text))
+        if not 'data' in data:
+            print(' not data 1 ' + str(data))
+            return False
+        processHashtagData(data['data'])
     
     return {}
     
     
+def filterTags(x):
+    if x.lower().startswith('loop:'):
+        return False
+    if x.lower().startswith('variable:'):
+        return False
+    if x.find(':')==-1:
+        return False
+    return True
 
-
-  
+def extractHtFromDict(screen):
+    if type(screen)=='text':
+        text = screen
+    else:
+        text = json.dumps(screen)
+    # print('text screen',text[:400])
+    foundHt = []
+    try:
+        found = re.findall(r'\#([\w:@]*)\#', text)
+        found = list(set(found))
+        foundHt = list(filter(lambda x: filterTags(x), found))
+    except AttributeError:
+        pass
+    if foundHt:
+        print('found', foundHt)
+    return foundHt
+      
 def parseScreen(screen):
     layoutScreen = GridLayout(cols=1)
-    hashtags = getHashTags(screen.get("id", 0))
+    foundHt = extractHtFromDict(screen)
+
+    hashtags = getHashTags(screen.get("id", 0),foundHt)
     for el in screen['attributes']['components']:
         foradding = processComponent(el)
         if foradding:
