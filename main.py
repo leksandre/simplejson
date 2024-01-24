@@ -14,6 +14,7 @@ from kivy.uix.videoplayer import VideoPlayer
 from kivy.storage.jsonstore import JsonStore
 from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
+from kivy.uix.scrollview import ScrollView
 
 # import cv2
 import sys
@@ -266,22 +267,97 @@ def auth():
         return False
     return True
 
+def processComponents(component, ui_components):
+    if 'components' in component:
+     for elemData in component['components']:
+        # print('- ',elemData)
+        if 1:
+            foradding = processComponent(elemData)
+            if foradding:
+                ui_components[0].add_widget(foradding)
+    
+def draw_mbst_flexrow_col(component, size_hint = 0):
+    print("component Col ['css']",component['css'])
+    # if component.get('properties',None).get('backendname',None):
+    #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
+    if size_hint!=0:
+        elem = BoxLayout(orientation='vertical', size_hint=(size_hint, 1))
+    else:
+        elem = BoxLayout(orientation='vertical')
+    processComponents(component,[elem])
+    return elem
+    
 def draw_mbst_slider(component):
+    print("component Slider ['css']",component['css'])
+    elem = BoxLayout(orientation='vertical')
+    processComponents(component,[elem])
+    return elem
+    
+def processItems(component, ui_components):
+    if 'items' in component:
+      fullColWidth = 0  
+      for elem in component['items']:
+       if elem.get('properties',None).get('colwidth',None):
+        fullColWidth += int(elem['properties']['colwidth'])
+        
+      for elem in component['items']: # если это стурктура с items
+       curColWidth = 0 
+    #    print('!!--aliasName',elem['aliasName'])
+    #    print('!!--name',elem['name'])
+       if elem.get('properties',None).get('colwidth',None):
+        # print('!!--colwidth',elem['properties']['colwidth'])
+        if fullColWidth>0:
+            curColWidth = int(elem['properties']['colwidth'])/fullColWidth
+    
+       # варинат 1 отправляем в "конвейер", т.е. создаём "бокс" для каждого элемента из items и обрабатываем его содержимое соответственно "линейно", но без влияния на родительский компонент
+       foradding = processComponent(elem, size_hint = curColWidth)
+       if foradding:
+        ui_components[0].add_widget(foradding)
+        
+       # вариант 2 сами реагируем на структуру компонента пропуская обработку элементов "обёрток" mbst-slider__slide mbst-flexrow__col
+    #    if 'components' in elem:
+    #     for elemData in elem['components']:
+    #         # print('- ',elemData)
+    #         if 1:
+    #             foradding = processComponent(elemData)
+    #             if foradding:
+    #                 ui_components[0].add_widget(foradding)
+
+                    
+                    
+def draw_mbst_slider(component): #has items!
     carousel = Carousel(direction='right')
+    processItems(component,[carousel])
     # TabbedPanel #??????
     
-    if 'items' in component:
-      for elem in component['items']:
-       if 'components' in elem:
-        for elemData in elem['components']:
-            # print('- ',elemData)
-            if 1:
-                foradding = processComponent(elemData)
-                if foradding:
-                    carousel.add_widget(foradding)
+    # if 'items' in component:
+    #   for elem in component['items']:
+    #    if 'components' in elem:
+    #     for elemData in elem['components']:
+    #         # print('- ',elemData)
+    #         if 1:
+    #             foradding = processComponent(elemData)
+    #             if foradding:
+    #                 carousel.add_widget(foradding)
                     
     return carousel
 
+def draw_mbst_flexrow(component): #has items!
+    layout = BoxLayout(orientation='horizontal',spacing=0) #, minimum_height=100
+    processItems(component,[layout])
+    
+    # if 'items' in component:
+    #   for elem in component['items']:
+    #    if 'components' in elem:
+    #     for elemData in elem['components']:
+    #         # print('- ',elemData)
+    #         if 1:
+    #             foradding = processComponent(elemData)
+    #             if foradding:
+    #                 layout.add_widget(foradding)
+                    
+    # layout.add_widget(Button(text=f'layout_n'))
+    return layout
 
 def draw_mbst_video_player(component):
     # print("-component properties ['properties']['source'] ",component['properties']['source'])
@@ -290,18 +366,41 @@ def draw_mbst_video_player(component):
     return player
 
 def draw_mbst_button(component):
+    # print("component Button ['css']",component['css'])
     btnSimple = Button(text=component['properties'].get('text', ""))
     # btn2e.bind(on_press=)
     # btn2e.bind(on_release=)
     return btnSimple
 
 def draw_mbst_image(component):
-    # print("-component properties ['properties']['image']'url' ",component['properties']['image']['url'])
+    this_url = False
+    if component.get('properties', None).get('image', None).get('url', None):
+        try:
+            this_url = component['properties']['image']['url']
+            print("-------component properties ['properties']['image']'url' ", this_url)
+        except KeyError as e:
+            print(' KeyError  ' + str(e))
+    else:    
+     if component.get('properties', None).get('image', None).get('attributes', None).get('Url', None):
+        try:
+            this_url = component['properties']['image']['attributes']['Url']
+            print("-------component properties ['properties']['image']['attributes']'url' ", this_url)
+        except KeyError as e:
+            print(' KeyError  ' + str(e))
+        
+    # if component.get('properties', None).get('backendname', None):
+    #     bn = component['properties']['backendname']
+    #     if bn == 'Image-384508c6':
+    #         print("component image ['properties']['backendname']",bn)
+    #         print(component['properties']['image']['attributes']['Url'])
+        
     # wimg = Image(source='mylogo.png')
+    # aimg = AsyncImage(source='https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/20/20095bc04ac1dfe4b3337d10caa77ca9.png')
     
-    aimg = AsyncImage(source='https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/20/20095bc04ac1dfe4b3337d10caa77ca9.png')
-    # aimg = AsyncImage(source=component['properties']['image']['url'])
-    return aimg
+    if this_url:
+        aimg = AsyncImage(source=this_url)
+        return aimg
+    return False
     
 def draw_mbst_text(component):
     textinput = Label(text=component['properties'].get('text', ""))
@@ -319,22 +418,6 @@ def draw_mbst_link(component):
     widget = Label(text=component['properties'].get('text', ""), markup=True)
     # widget.bind(on_ref_press=print_it)
     return widget
-    
-def draw_mbst_flexrow(component):
-    layout = BoxLayout(orientation='vertical',spacing=10)
-    
-    if 'items' in component:
-      for elem in component['items']:
-       if 'components' in elem:
-        for elemData in elem['components']:
-            # print('- ',elemData)
-            if 1:
-                foradding = processComponent(elemData)
-                if foradding:
-                    layout.add_widget(foradding)
-                    
-    # layout.add_widget(Button(text=f'layout_n'))
-    return layout
 
 def processHtOnComponent(component):
     
@@ -348,7 +431,7 @@ def processHtOnComponent(component):
             if store.exists('#'+p_ht[0].lower()+'#'):
                 ht_v = store.get('#'+p_ht[0].lower()+'#')
                 if p_ht[1] in ht_v:
-                    print(h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
+                    # print(h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
                     text = text.replace('#'+h+'#',ht_v.get(p_ht[1]))
 
     try:
@@ -362,7 +445,7 @@ def processHtOnComponent(component):
 
     return component
     
-def processComponent(component):
+def processComponent(component, size_hint = 0):
 
     # for elem in component:
     #     print('-component',elem)
@@ -381,7 +464,13 @@ def processComponent(component):
         return draw_mbst_flexrow(el)
     if el['name'] == 'mbst-slider':
         return draw_mbst_slider(el)
-        
+    # подэлементы от flexrow и slider
+    if el['name'] == 'mbst-flexrow__col':
+        return draw_mbst_flexrow_col(el, size_hint)
+    if el['name'] == 'mbst-slider__slide':
+        return draw_mbst_flexrow_col(el) 
+
+
     if 'items' in component:
         print('has more items!!!')
     
@@ -398,8 +487,17 @@ def processComponent(component):
     if el['name'] == 'mbst-video-player':
         return draw_mbst_video_player(el)
 
+    #drawers
+    if el['name'] == 'mbst-drawer-left':
+        pass
+    if el['name'] == 'mbst-drawer-right':
+        pass
     
-    print('name',el['name'])
+
+    
+    
+    print('!-aliasName',el['aliasName'])
+    print('!-name',el['name'])
     return False
 
 
@@ -496,7 +594,12 @@ def extractHtFromDict(screen):
     return foundHt
       
 def parseScreen(screen):
-    layoutScreen = GridLayout(cols=1)
+    layoutScreen = GridLayout(cols=1, spacing=0)# , size_hint_y=2
+    
+    # layoutScreen = GridLayout(cols=1, spacing=10, size_hint_y=None)
+    # layoutScreen.bind(minimum_height=layoutScreen.setter('height'))
+    root = ScrollView(size_hint=(1, None), size=(Window.width, Window.height))
+    
     foundHt = extractHtFromDict(screen)
 
     hashtags = getHashTags(screen.get("id", 0),foundHt)
@@ -504,12 +607,10 @@ def parseScreen(screen):
         foradding = processComponent(el)
         if foradding:
             layoutScreen.add_widget(foradding)
-            
-    # layoutScreen.add_widget(BoxLayout(orientation='vertical'))
-    # btn2e = Button(text='exit')
-    # btn2e.bind(on_press=TestApp().exitApp2())
-    # layoutScreen.add_widget(btn2e)
-    return layoutScreen
+    
+
+    root.add_widget(layoutScreen)
+    return root
         
 
        
