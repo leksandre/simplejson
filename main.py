@@ -91,7 +91,7 @@ Config.set('graphics', 'height', '400')
 
 from kivy.core.window import Window
 Window.size = (600, 1000)
-
+# Window.clearcolor = (1.0, 1.0, 1.0, 1.0)
 
 # config 
 execution_path = os.getcwd()
