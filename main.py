@@ -270,6 +270,8 @@ def auth():
 def processComponents(component, ui_components):
     if 'components' in component:
      for elemData in component['components']:
+        # print('!!-- Carousel slide item aliasName',elemData['aliasName'])
+        # print('!!-- Carousel slide item name',elemData['name'])
         # print('- ',elemData)
         if 1:
             foradding = processComponent(elemData)
@@ -277,26 +279,37 @@ def processComponents(component, ui_components):
                 ui_components[0].add_widget(foradding)
     
 def draw_mbst_flexrow_col(component, size_hint = 0):
-    print("component Col ['css']",component['css'])
+    # print("component Col ['css']",component['css'])
+    
     # if component.get('properties',None).get('backendname',None):
     #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
+    
     if size_hint!=0:
         elem = BoxLayout(orientation='vertical', size_hint=(size_hint, 1))
+        #, minimum_height=10
     else:
-        elem = BoxLayout(orientation='vertical')
+        elem = BoxLayout(orientation='vertical')#, minimum_height=10
     processComponents(component,[elem])
     return elem
-    
-def draw_mbst_slider(component):
-    print("component Slider ['css']",component['css'])
-    elem = BoxLayout(orientation='vertical')
+
+
+def draw_mbst_slider_slide(component):
+    elem = BoxLayout(orientation='vertical')#, minimum_height=10
+    # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
     processComponents(component,[elem])
     return elem
+
+# def someOneBox(component):
+#     elem = BoxLayout(orientation='vertical')
+#     processComponents(component,[elem])
+#     return elem
     
 def processItems(component, ui_components):
     if 'items' in component:
       fullColWidth = 0  
       for elem in component['items']:
+          
+    # специально для высчитывания ширины колнок во flexrow 
        if elem.get('properties',None).get('colwidth',None):
         fullColWidth += int(elem['properties']['colwidth'])
         
@@ -323,10 +336,16 @@ def processItems(component, ui_components):
     #             if foradding:
     #                 ui_components[0].add_widget(foradding)
 
-                    
+class MyCarousel(Carousel):
+    def on_index(self, instance, value):
+        current_widget = self.slides[int(value)]
+        # self.size = current_widget.size       
+        self.size_hint = (1, None) 
+        self.height = self.height+40
                     
 def draw_mbst_slider(component): #has items!
-    carousel = Carousel(direction='right')
+    # print("------component Slider Carousel ['css']",component['css'])
+    carousel = Carousel(direction='right',size_hint = (1, None), opacity=0.10 )
     processItems(component,[carousel])
     # TabbedPanel #??????
     
@@ -403,9 +422,9 @@ def draw_mbst_image(component):
     return False
     
 def draw_mbst_text(component):
-    textinput = Label(text=component['properties'].get('text', ""))
+    label = Label(text=component['properties'].get('text', ""))
     # btn2e.bind(on_ref_press=)
-    return textinput
+    return label
     
 def draw_mbst_text_area(component):
     textinput = TextInput(text=component['properties'].get('text', ""), multiline=True)
@@ -416,6 +435,7 @@ def draw_mbst_text_area(component):
 def draw_mbst_link(component):
     # widget = Label(text='Hello [ref=world]World[/ref]', markup=True)
     widget = Label(text=component['properties'].get('text', ""), markup=True)
+    # , padding=10
     # widget.bind(on_ref_press=print_it)
     return widget
 
@@ -444,21 +464,9 @@ def processHtOnComponent(component):
                 
 
     return component
-    
-def processComponent(component, size_hint = 0):
 
-    # for elem in component:
-    #     print('-component',elem)
-    # print('-component properties',component['properties'])
-        
-    el = component
-    
-    # print('css',el['css'])
-    # print('config',el['config'])
-    
-    el = processHtOnComponent(el)#заменяем хештеги
 
-        
+def createComponentUix(el, size_hint=0):
     # отрисовываем компоненты и возврщаем их вызвавшему родительскому компоненту
     if el['name'] == 'mbst-flexrow':
         return draw_mbst_flexrow(el)
@@ -468,10 +476,10 @@ def processComponent(component, size_hint = 0):
     if el['name'] == 'mbst-flexrow__col':
         return draw_mbst_flexrow_col(el, size_hint)
     if el['name'] == 'mbst-slider__slide':
-        return draw_mbst_flexrow_col(el) 
+        return draw_mbst_slider_slide(el) 
 
 
-    if 'items' in component:
+    if 'items' in el:
         print('has more items!!!')
     
     if el['name'] == 'mbst-button':
@@ -492,9 +500,42 @@ def processComponent(component, size_hint = 0):
         pass
     if el['name'] == 'mbst-drawer-right':
         pass
-    
 
     
+def processComponent(component, size_hint = 0):
+
+    # for elem in component:
+    #     print('-component',elem)
+    # print('-component properties',component['properties'])
+        
+    el = component
+    
+    # print('css',el['css'])
+    # print('config',el['config'])
+    # if 'uuid' in el:
+    #     print('uuid',el['uuid'])
+    
+    el = processHtOnComponent(el)#заменяем хештеги
+
+        
+
+    
+    uixCmp = createComponentUix(el, size_hint)
+    if uixCmp:
+        
+        try:
+            pass
+            # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
+            # uixCmp.height = 120
+            # uixCmp.line_height = 120 # Label.line_height
+            # uixCmp.line_height = 120 # TextInput.line_height
+            # uixCmp.minimum_height = 120 # TextInput.minimum_height
+            #Widget.height
+        except AttributeError:
+            pass
+        
+        return uixCmp
+        
     
     print('!-aliasName',el['aliasName'])
     print('!-name',el['name'])
@@ -592,28 +633,63 @@ def extractHtFromDict(screen):
     if foundHt:
         print('found', foundHt)
     return foundHt
-      
-def parseScreen(screen):
-    layoutScreen = GridLayout(cols=1, spacing=0)# , size_hint_y=2
-    
-    # layoutScreen = GridLayout(cols=1, spacing=10, size_hint_y=None)
-    # layoutScreen.bind(minimum_height=layoutScreen.setter('height'))
-    root = ScrollView(size_hint=(1, None), size=(Window.width, Window.height))
-    
-    foundHt = extractHtFromDict(screen)
 
-    hashtags = getHashTags(screen.get("id", 0),foundHt)
-    for el in screen['attributes']['components']:
-        foradding = processComponent(el)
-        if foradding:
-            layoutScreen.add_widget(foradding)
+
+# var 1   
+# def parseScreen(screen):
+#     layoutScreen = GridLayout(cols=1, spacing=0)# , size_hint_y=2
+    
+#     root = ScrollView()# size_hint=(1, 1) , size=(Window.width, Window.height)
+    
+#     foundHt = extractHtFromDict(screen)
+
+#     hashtags = getHashTags(screen.get("id", 0),foundHt)
+#     for el in self.grid_layout['attributes']['components']:
+#         foradding = processComponent(el)
+#         if foradding:
+#             layoutScreen.add_widget(foradding)
     
 
-    root.add_widget(layoutScreen)
-    return root
+#     root.add_widget(layoutScreen)
+#     return root
         
 
-       
+
+# var 2
+class ScrollableGridLayout(ScrollView):
+    def __init__(self, **kwargs):
+        super(ScrollableGridLayout, self).__init__(**kwargs)
+
+        # Создание GridLayout и установка его свойств
+        self.grid_layout = GridLayout()
+        self.grid_layout.cols = 1
+        self.grid_layout.size_hint_y = 1
+        self.grid_layout.bind(minimum_height=self.grid_layout.setter('height'))
+        
+    def fill(self, screen):
+        # Добавление кнопок в GridLayout
+        foundHt = extractHtFromDict(screen)
+
+        hashtags = getHashTags(screen.get("id", 0),foundHt)
+        for el in screen['attributes']['components']:
+            foradding = processComponent(el)
+            if foradding:
+                self.grid_layout.add_widget(foradding)
+
+        # Добавление GridLayout в ScrollView
+        self.add_widget(self.grid_layout)
+        
+def parseScreen(screen):   
+        scrollable_grid_layout = ScrollableGridLayout()
+        scrollable_grid_layout.fill(screen)
+        scrollable_grid_layout.size_hint = (1, 1)  # Занимает всё окно
+
+        return scrollable_grid_layout
+    
+    
+    
+    
+    
     
 class TestApp(App):
     # def exitApp2(self):
