@@ -30,6 +30,7 @@ import requests
 import json
 import html2text
 import re
+import validators
 
 store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
 
@@ -278,32 +279,11 @@ def processComponents(component, ui_components):
             if foradding:
                 ui_components[0].add_widget(foradding)
     
-def draw_mbst_flexrow_col(component, size_hint = 0):
-    # print("component Col ['css']",component['css'])
-    
-    # if component.get('properties',None).get('backendname',None):
-    #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
-    
-    if size_hint!=0:
-        elem = BoxLayout(orientation='vertical', size_hint=(size_hint, 1))
-        #, minimum_height=10
-    else:
-        elem = BoxLayout(orientation='vertical')#, minimum_height=10
-    processComponents(component,[elem])
-    return elem
 
 
-def draw_mbst_slider_slide(component):
-    elem = BoxLayout(orientation='vertical')#, minimum_height=10
-    # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
-    processComponents(component,[elem])
-    return elem
 
-# def someOneBox(component):
-#     elem = BoxLayout(orientation='vertical')
-#     processComponents(component,[elem])
-#     return elem
-    
+
+
 def processItems(component, ui_components):
     if 'items' in component:
       fullColWidth = 0  
@@ -336,6 +316,24 @@ def processItems(component, ui_components):
     #             if foradding:
     #                 ui_components[0].add_widget(foradding)
 
+def draw_mbst_slider_slide(component):
+    elem = BoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10, spacing=20
+    # elem.bind(minimum_width=elem.setter('width'))
+    elem.bind(minimum_height=elem.setter('height'))
+    # elem.bind(minimum_size=elem.setter('size'))
+    # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
+    processComponents(component,[elem])
+    
+    if 'backendname' in component['properties']:
+        print('backendname',component['properties']['backendname'])
+        
+    children = elem.children
+    for child in children:
+        print('Carousel_item_child.height',child.height)    
+        elem.height = elem.height+child.height
+        
+    return elem
+
 class MyCarousel(Carousel):
     def on_index(self, instance, value):
         current_widget = self.slides[int(value)]
@@ -345,37 +343,56 @@ class MyCarousel(Carousel):
                     
 def draw_mbst_slider(component): #has items!
     # print("------component Slider Carousel ['css']",component['css'])
-    carousel = Carousel(direction='right',size_hint = (1, None), opacity=0.10 )
+    carousel = Carousel(direction='right',size_hint = (None, None), opacity=0.50 )
+    # carousel.bind(minimum_height=carousel.setter('height'))
     processItems(component,[carousel])
     # TabbedPanel #??????
     
-    # if 'items' in component:
-    #   for elem in component['items']:
-    #    if 'components' in elem:
-    #     for elemData in elem['components']:
-    #         # print('- ',elemData)
-    #         if 1:
-    #             foradding = processComponent(elemData)
-    #             if foradding:
-    #                 carousel.add_widget(foradding)
-                    
+    if 'backendname' in component['properties']:
+        print('backendname',component['properties']['backendname'])
+        
+    children = carousel.children
+    for child in children:
+        print('Carousel_child.height',child.height) 
+        carousel.height = carousel.height+child.height
     return carousel
 
+def draw_mbst_flexrow_col(component, size_hint = 0):
+    # print("component Col ['css']",component['css'])
+    
+    # if component.get('properties',None).get('backendname',None):
+    #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
+    
+    if size_hint!=0:
+        elem = BoxLayout(orientation='vertical', size_hint=(size_hint, None))
+        #, minimum_height=10
+    else:
+        elem = BoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10
+    elem.bind(minimum_height=elem.setter('height'))
+    processComponents(component,[elem])
+    
+    if 'backendname' in component['properties']:
+        print('backendname',component['properties']['backendname'])
+        
+    children = elem.children
+    for child in children:
+        print('flexrow_item_child.height',child.height)    
+        elem.height = elem.height+child.height
+    return elem
+
+
 def draw_mbst_flexrow(component): #has items!
-    layout = BoxLayout(orientation='horizontal',spacing=0) #, minimum_height=100
+    layout = BoxLayout(orientation='horizontal',spacing=0, size_hint=(1, None)) #, minimum_height=100
+    layout.bind(minimum_height=layout.setter('height'))
     processItems(component,[layout])
     
-    # if 'items' in component:
-    #   for elem in component['items']:
-    #    if 'components' in elem:
-    #     for elemData in elem['components']:
-    #         # print('- ',elemData)
-    #         if 1:
-    #             foradding = processComponent(elemData)
-    #             if foradding:
-    #                 layout.add_widget(foradding)
-                    
-    # layout.add_widget(Button(text=f'layout_n'))
+    if 'backendname' in component['properties']:
+        print('backendname',component['properties']['backendname'])
+        
+    children = layout.children
+    for child in children:
+        print('flexrow_child.height',child.height)    
+        layout.height = layout.height+child.height
     return layout
 
 def draw_mbst_video_player(component):
@@ -417,6 +434,7 @@ def draw_mbst_image(component):
     # aimg = AsyncImage(source='https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/20/20095bc04ac1dfe4b3337d10caa77ca9.png')
     
     if this_url:
+      if validators.url("this_url"):
         aimg = AsyncImage(source=this_url)
         return aimg
     return False
@@ -531,6 +549,7 @@ def processComponent(component, size_hint = 0):
             # uixCmp.line_height = 120 # TextInput.line_height
             # uixCmp.minimum_height = 120 # TextInput.minimum_height
             #Widget.height
+            # uixCmp.size_hint=(1, None)
         except AttributeError:
             pass
         
@@ -635,59 +654,43 @@ def extractHtFromDict(screen):
     return foundHt
 
 
-# var 1   
-# def parseScreen(screen):
-#     layoutScreen = GridLayout(cols=1, spacing=0)# , size_hint_y=2
-    
-#     root = ScrollView()# size_hint=(1, 1) , size=(Window.width, Window.height)
-    
-#     foundHt = extractHtFromDict(screen)
 
-#     hashtags = getHashTags(screen.get("id", 0),foundHt)
-#     for el in self.grid_layout['attributes']['components']:
-#         foradding = processComponent(el)
-#         if foradding:
-#             layoutScreen.add_widget(foradding)
-    
+# будем класть в корень ScrollView, но, если что, можно и BoxLayout, для некоторых реализаций он будет даже удобнее, главное не забыть положить на него наш ScrollView
+class ScrollableContent(ScrollView):#BoxLayout
+    def __init__(self, screen, **kwargs):
+        super(ScrollableContent, self).__init__(**kwargs)
+        self.orientation = 'vertical'
+        self.size_hint=(1, 1)
 
-#     root.add_widget(layoutScreen)
-#     return root
+        content_layout = BoxLayout(orientation='vertical', size_hint=(1, None), spacing=10)
+        content_layout.bind(minimum_height=content_layout.setter('height'))
         
-
-
-# var 2
-class ScrollableGridLayout(ScrollView):
-    def __init__(self, **kwargs):
-        super(ScrollableGridLayout, self).__init__(**kwargs)
-
-        # Создание GridLayout и установка его свойств
-        self.grid_layout = GridLayout()
-        self.grid_layout.cols = 1
-        self.grid_layout.size_hint_y = 1
-        self.grid_layout.bind(minimum_height=self.grid_layout.setter('height'))
-        
-    def fill(self, screen):
-        # Добавление кнопок в GridLayout
         foundHt = extractHtFromDict(screen)
-
         hashtags = getHashTags(screen.get("id", 0),foundHt)
         for el in screen['attributes']['components']:
             foradding = processComponent(el)
             if foradding:
-                self.grid_layout.add_widget(foradding)
+                
+              for i in range(5):
+                button = Button(text=f'Button {i}', size_hint=(1, None), height=40)
+                content_layout.add_widget(button)
+                
+              content_layout.add_widget(foradding)
+        self.add_widget(content_layout)    
 
-        # Добавление GridLayout в ScrollView
-        self.add_widget(self.grid_layout)
-        
-def parseScreen(screen):   
-        scrollable_grid_layout = ScrollableGridLayout()
-        scrollable_grid_layout.fill(screen)
-        scrollable_grid_layout.size_hint = (1, 1)  # Занимает всё окно
-
-        return scrollable_grid_layout
+        # scroll_view = ScrollView(size_hint=(1, 1))
+        # scroll_view.add_widget(content_layout)
+        # self.add_widget(scroll_view)
+          
+def parseScreen(screen):
+    scrollable_content = ScrollableContent(screen)
     
-    
-    
+    # если понадобится дополнительный коневрой элемент 
+    # root_layout = BoxLayout(orientation='vertical', size_hint=(1, 1))
+    # root_layout.bind(minimum_height=root_layout.setter('height'))
+    # root_layout.add_widget(scrollable_content)
+    return scrollable_content
+ 
     
     
     
