@@ -3,9 +3,9 @@ kivy.require('1.0.7')
 from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
 from clases.MyBoxLayout import MyBoxLayout
 from clases.MyCarousel import MyCarousel
+from clases.MyButton import MyButton
+from clases.MyLabel import MyLabel
 from kivy.app import App
-from kivy.uix.button import Button
-from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.videoplayer import VideoPlayerAnnotation
@@ -329,7 +329,7 @@ def processItems(component, ui_components):
 #     return elem
 
 def draw_mbst_slider_slide(component):
-    elem = MyBoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10, spacing=20
+    elem = MyBoxLayout(orientation='vertical',size_hint=(1, None), componentMbst = component)#, minimum_height=10, spacing=20
     # elem.bind(minimum_width=elem.setter('width'))
     # elem.bind(minimum_height=elem.setter('height'))
     # elem.bind(minimum_size=elem.setter('size'))
@@ -356,7 +356,10 @@ def draw_mbst_slider_slide(component):
                     
 def draw_mbst_slider(component): #has items!
     # print("------component Slider Carousel ['css']",component['css'])
-    carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50 )
+    carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50, componentMbst = component )
+    
+    # carousel = MyBoxLayout(orientation='vertical',size_hint = (1, None), opacity=0.50 )
+    
     # carousel.bind(minimum_height=carousel.setter('height'))
     processItems(component,[carousel])
     # TabbedPanel #??????
@@ -379,13 +382,13 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
     #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
     
     if size_hint!=0:
-        elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None))
+        elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None), componentMbst = component)
  
-        if 'backendname' in component['properties']:
-            print('backendname final size_hint',component['properties']['backendname'], size_hint)
+        # if 'backendname' in component['properties']:
+        #     print('backendname final size_hint',component['properties']['backendname'], size_hint)
         #, minimum_height=10
     else:
-        elem = MyBoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10
+        elem = MyBoxLayout(orientation='vertical',size_hint=(1, None), componentMbst = component)#, minimum_height=10
     # elem.bind(minimum_height=elem.setter('height'))
     processComponents(component,[elem])
     
@@ -402,7 +405,7 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
 
 
 def draw_mbst_flexrow(component): #has items!
-    layout = MyBoxLayout(orientation='horizontal',spacing=0, size_hint=(1, None)) #, minimum_height=100
+    layout = MyBoxLayout(orientation='horizontal',spacing=20, size_hint=(1, None), componentMbst = component, padding=20) #, minimum_height=100
     # layout.bind(minimum_height=layout.setter('height'))
     processItems(component,[layout])
     
@@ -425,7 +428,7 @@ def draw_mbst_video_player(component):
 
 def draw_mbst_button(component):
     # print("component Button ['css']",component['css'])
-    btnSimple = Button(text=component['properties'].get('text', ""))
+    btnSimple = MyButton(text=component['properties'].get('text', "")) # , size_hint=(1, None), height=10, width=10, padding=(2,2), line_height = 10
     # btn2e.bind(on_press=)
     # btn2e.bind(on_release=)
     return btnSimple
@@ -462,7 +465,7 @@ def draw_mbst_image(component):
     return False
     
 def draw_mbst_text(component):
-    label = Label(text=component['properties'].get('text', ""))
+    label = MyLabel(text=component['properties'].get('text', ""), componentMbst = component)#, padding = 10, line_height=20
     # btn2e.bind(on_ref_press=)
     return label
     
@@ -474,7 +477,7 @@ def draw_mbst_text_area(component):
 
 def draw_mbst_link(component):
     # widget = Label(text='Hello [ref=world]World[/ref]', markup=True)
-    widget = Label(text=component['properties'].get('text', ""), markup=True)
+    widget = MyLabel(text=component['properties'].get('text', ""), componentMbst = component)
     # , padding=10
     # widget.bind(on_ref_press=print_it)
     return widget
@@ -671,8 +674,8 @@ def extractHtFromDict(screen):
         foundHt = list(filter(lambda x: filterTags(x), found))
     except AttributeError:
         pass
-    if foundHt:
-        print('found', foundHt)
+    # if foundHt:
+    #     print('found', foundHt)
     return foundHt
 
 def parseScreen(screen):
@@ -715,13 +718,13 @@ class ScrollableContent(ScrollView):#BoxLayout
             if foradding:
                 
             # когда нужно посмотреть "широким взглядом" мы расскоментируем "ктулху"
-              boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
-              for i in range(5):
-                button = Button(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
-                boxcontainer.add_widget(button)
-                boxcontainer.do_layout()
-              boxcontainer.do_layout()
-              content_layout.add_widget(boxcontainer)
+            #   boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
+            #   for i in range(5):
+            #     button = Button(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
+            #     boxcontainer.add_widget(button)
+            #     boxcontainer.do_layout()
+            #   boxcontainer.do_layout()
+            #   content_layout.add_widget(boxcontainer)
                 
               content_layout.add_widget(foradding)
         self.add_widget(content_layout)    
@@ -748,7 +751,7 @@ class TestApp(App):
             for screen in screens:
                 return  parseScreen(screen)
             
-        btn2e = Button(text='some failed, exit')
+        btn2e = MyButton(text='some failed, exit')
         btn2e.bind(on_press=self.exitApp)
         return btn2e
 
