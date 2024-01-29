@@ -1,20 +1,20 @@
 import kivy
 kivy.require('1.0.7')
 from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
+from clases.MyBoxLayout import MyBoxLayout
+from clases.MyCarousel import MyCarousel
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
-from kivy.uix.carousel import Carousel
 from kivy.uix.videoplayer import VideoPlayerAnnotation
 from kivy.uix.videoplayer import VideoPlayer
 from kivy.storage.jsonstore import JsonStore
 from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
 from kivy.uix.scrollview import ScrollView
+
 
 # import cv2
 import sys
@@ -316,45 +316,60 @@ def processItems(component, ui_components):
     #             if foradding:
     #                 ui_components[0].add_widget(foradding)
 
+# def draw_mbst_slider(component): #has items!
+#     # print("------component Slider Carousel ['css']",component['css'])
+#     carousel = Carousel(direction='right',size_hint = (1, None), opacity=0.50 )
+#     processItems(component,[carousel])              
+#     return carousel
+
+# def draw_mbst_slider_slide(component):
+#     elem = MyBoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10
+#     # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
+#     processComponents(component,[elem])
+#     return elem
+
 def draw_mbst_slider_slide(component):
-    elem = BoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10, spacing=20
+    elem = MyBoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10, spacing=20
     # elem.bind(minimum_width=elem.setter('width'))
-    elem.bind(minimum_height=elem.setter('height'))
+    # elem.bind(minimum_height=elem.setter('height'))
     # elem.bind(minimum_size=elem.setter('size'))
     # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
     processComponents(component,[elem])
     
-    if 'backendname' in component['properties']:
-        print('backendname',component['properties']['backendname'])
-        
-    children = elem.children
-    for child in children:
-        print('Carousel_item_child.height',child.height)    
-        elem.height = elem.height+child.height
+    # if 'backendname' in component['properties']:
+    #             print('backendname slider',component['properties']['backendname'])
+    
+    # вручную высчитываем необходимую высоту элемента
+    # if 'backendname' in component['properties']:
+    #     print('backendname',component['properties']['backendname'])
+    #     children = elem.children
+    #     for child in children:
+    #         print('Carousel_item_child.height',child.height)    
+    #         elem.height = elem.height+child.height
+    #     print('final height',elem.height,component['properties']['backendname'])   
         
     return elem
 
-class MyCarousel(Carousel):
-    def on_index(self, instance, value):
-        current_widget = self.slides[int(value)]
-        # self.size = current_widget.size       
-        self.size_hint = (1, None) 
-        self.height = self.height+40
+
+        
+
                     
 def draw_mbst_slider(component): #has items!
     # print("------component Slider Carousel ['css']",component['css'])
-    carousel = Carousel(direction='right',size_hint = (None, None), opacity=0.50 )
+    carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50 )
     # carousel.bind(minimum_height=carousel.setter('height'))
     processItems(component,[carousel])
     # TabbedPanel #??????
     
-    if 'backendname' in component['properties']:
-        print('backendname',component['properties']['backendname'])
-        
-    children = carousel.children
-    for child in children:
-        print('Carousel_child.height',child.height) 
-        carousel.height = carousel.height+child.height
+     # вручную высчитываем необходимую высоту элемента
+    # if 'backendname' in component['properties']:
+    #     print('backendname',component['properties']['backendname'])
+    #     children = carousel.children
+    #     for child in children:
+    #         print('Carousel_child.height',child.height) 
+    #         carousel.height = carousel.height+child.height
+    #     print('final height',carousel.height,component['properties']['backendname'])
+           
     return carousel
 
 def draw_mbst_flexrow_col(component, size_hint = 0):
@@ -364,35 +379,42 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
     #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
     
     if size_hint!=0:
-        elem = BoxLayout(orientation='vertical', size_hint=(size_hint, None))
+        elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None))
+ 
+        if 'backendname' in component['properties']:
+            print('backendname final size_hint',component['properties']['backendname'], size_hint)
         #, minimum_height=10
     else:
-        elem = BoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10
-    elem.bind(minimum_height=elem.setter('height'))
+        elem = MyBoxLayout(orientation='vertical',size_hint=(1, None))#, minimum_height=10
+    # elem.bind(minimum_height=elem.setter('height'))
     processComponents(component,[elem])
     
-    if 'backendname' in component['properties']:
-        print('backendname',component['properties']['backendname'])
+     # вручную высчитываем необходимую высоту элемента
+    # if 'backendname' in component['properties']:
+    #     print('backendname',component['properties']['backendname'])
+    #     children = elem.children
+    #     for child in children:
+    #         print('flexrow_item_child.height',child.height)    
+    #         elem.height = elem.height+child.height
+    #     print('final height',elem.height,component['properties']['backendname'])   
         
-    children = elem.children
-    for child in children:
-        print('flexrow_item_child.height',child.height)    
-        elem.height = elem.height+child.height
     return elem
 
 
 def draw_mbst_flexrow(component): #has items!
-    layout = BoxLayout(orientation='horizontal',spacing=0, size_hint=(1, None)) #, minimum_height=100
-    layout.bind(minimum_height=layout.setter('height'))
+    layout = MyBoxLayout(orientation='horizontal',spacing=0, size_hint=(1, None)) #, minimum_height=100
+    # layout.bind(minimum_height=layout.setter('height'))
     processItems(component,[layout])
     
-    if 'backendname' in component['properties']:
-        print('backendname',component['properties']['backendname'])
+     # вручную высчитываем необходимую высоту элемента
+    # if 'backendname' in component['properties']:
+    #     print('backendname',component['properties']['backendname'])
+    #     children = layout.children
+    #     for child in children:
+    #         print('flexrow_child.height',child.height)    
+    #         layout.height = layout.height+child.height
+    #     print('final height',layout.height,component['properties']['backendname'])   
         
-    children = layout.children
-    for child in children:
-        print('flexrow_child.height',child.height)    
-        layout.height = layout.height+child.height
     return layout
 
 def draw_mbst_video_player(component):
@@ -434,7 +456,7 @@ def draw_mbst_image(component):
     # aimg = AsyncImage(source='https://viafdn-admin.mobsted.com/tenants/viafdn/uploads/2021/7/20/20095bc04ac1dfe4b3337d10caa77ca9.png')
     
     if this_url:
-      if validators.url("this_url"):
+      if validators.url(this_url):
         aimg = AsyncImage(source=this_url)
         return aimg
     return False
@@ -653,6 +675,27 @@ def extractHtFromDict(screen):
         print('found', foundHt)
     return foundHt
 
+def parseScreen(screen):
+    scrollable_content = ScrollableContent(screen)
+    
+    # если понадобится дополнительный коневрой элемент 
+    # root_layout = MyBoxLayout(orientation='vertical', size_hint=(1, 1))
+    # root_layout.bind(minimum_height=root_layout.setter('height'))
+    # root_layout.add_widget(scrollable_content)
+    return scrollable_content
+ 
+    
+    
+    
+    
+# классы
+    
+    
+    
+    
+
+
+        
 
 
 # будем класть в корень ScrollView, но, если что, можно и BoxLayout, для некоторых реализаций он будет даже удобнее, главное не забыть положить на него наш ScrollView
@@ -662,8 +705,8 @@ class ScrollableContent(ScrollView):#BoxLayout
         self.orientation = 'vertical'
         self.size_hint=(1, 1)
 
-        content_layout = BoxLayout(orientation='vertical', size_hint=(1, None), spacing=10)
-        content_layout.bind(minimum_height=content_layout.setter('height'))
+        content_layout = MyBoxLayout(orientation='vertical', size_hint=(1, None), spacing=0)
+        # content_layout.bind(minimum_height=content_layout.setter('height'))
         
         foundHt = extractHtFromDict(screen)
         hashtags = getHashTags(screen.get("id", 0),foundHt)
@@ -671,9 +714,14 @@ class ScrollableContent(ScrollView):#BoxLayout
             foradding = processComponent(el)
             if foradding:
                 
+            # когда нужно посмотреть "широким взглядом" мы расскоментируем "ктулху"
+              boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
               for i in range(5):
-                button = Button(text=f'Button {i}', size_hint=(1, None), height=40)
-                content_layout.add_widget(button)
+                button = Button(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
+                boxcontainer.add_widget(button)
+                boxcontainer.do_layout()
+              boxcontainer.do_layout()
+              content_layout.add_widget(boxcontainer)
                 
               content_layout.add_widget(foradding)
         self.add_widget(content_layout)    
@@ -681,17 +729,7 @@ class ScrollableContent(ScrollView):#BoxLayout
         # scroll_view = ScrollView(size_hint=(1, 1))
         # scroll_view.add_widget(content_layout)
         # self.add_widget(scroll_view)
-          
-def parseScreen(screen):
-    scrollable_content = ScrollableContent(screen)
-    
-    # если понадобится дополнительный коневрой элемент 
-    # root_layout = BoxLayout(orientation='vertical', size_hint=(1, 1))
-    # root_layout.bind(minimum_height=root_layout.setter('height'))
-    # root_layout.add_widget(scrollable_content)
-    return scrollable_content
- 
-    
+              
     
     
 class TestApp(App):
