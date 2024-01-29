@@ -270,10 +270,23 @@ def auth():
 
 def processComponents(component, ui_components):
     if 'components' in component:
+        
+    #  #debug   
+    #  if component.get('properties',None).get('backendname',None):
+    #     if component['properties']['backendname'] == 'SlideItem-f5f504c8':
+    #         print("draw_mbst_slider_slide",component['properties']['backendname'])
+                
+                
      for elemData in component['components']:
         # print('!!-- Carousel slide item aliasName',elemData['aliasName'])
         # print('!!-- Carousel slide item name',elemData['name'])
         # print('- ',elemData)
+        
+        # #debug   
+        # if component.get('properties',None).get('backendname',None):
+        #     if component['properties']['backendname'] == 'SlideItem-f5f504c8':
+        #         print("elemData",elemData['properties']['backendname'])
+                
         if 1:
             foradding = processComponent(elemData)
             if foradding:
@@ -294,7 +307,7 @@ def processItems(component, ui_components):
         fullColWidth += int(elem['properties']['colwidth'])
         
       for elem in component['items']: # если это стурктура с items
-       curColWidth = 0 
+       curColWidth = -1 
     #    print('!!--aliasName',elem['aliasName'])
     #    print('!!--name',elem['name'])
        if elem.get('properties',None).get('colwidth',None):
@@ -334,6 +347,7 @@ def draw_mbst_slider_slide(component):
     # elem.bind(minimum_height=elem.setter('height'))
     # elem.bind(minimum_size=elem.setter('size'))
     # elem = GridLayout(cols=1, spacing=10, minimum_height = 200)
+
     processComponents(component,[elem])
     
     # if 'backendname' in component['properties']:
@@ -358,6 +372,7 @@ def draw_mbst_slider(component): #has items!
     # print("------component Slider Carousel ['css']",component['css'])
     carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50, componentMbst = component )
     
+    
     # carousel = MyBoxLayout(orientation='vertical',size_hint = (1, None), opacity=0.50 )
     
     # carousel.bind(minimum_height=carousel.setter('height'))
@@ -378,10 +393,23 @@ def draw_mbst_slider(component): #has items!
 def draw_mbst_flexrow_col(component, size_hint = 0):
     # print("component Col ['css']",component['css'])
     
+    #debug
     # if component.get('properties',None).get('backendname',None):
-    #     print("component Col ['properties']['backendname']",component['properties']['backendname'])
+        # if component['properties']['backendname']=='cell-be760fbc':
+        #     print("component Col ['properties']['backendname']",component['properties']['backendname'], size_hint)
+        #     if size_hint==-1:
+        #         print("component Col 1")
+        #     if size_hint==0.0:
+        #         print("component Col 0.0")
+        #     if size_hint>0:
+        #         print("component Col >0")
+                
+    if size_hint==-1:
+        return False
+    if size_hint==0.0:
+        return False
     
-    if size_hint!=0:
+    if size_hint>0:
         elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None), componentMbst = component)
  
         # if 'backendname' in component['properties']:
@@ -405,7 +433,7 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
 
 
 def draw_mbst_flexrow(component): #has items!
-    layout = MyBoxLayout(orientation='horizontal',spacing=20, size_hint=(1, None), componentMbst = component, padding=20) #, minimum_height=100
+    layout = MyBoxLayout(orientation='horizontal', size_hint=(1, None), componentMbst = component) #, minimum_height=100
     # layout.bind(minimum_height=layout.setter('height'))
     processItems(component,[layout])
     
@@ -470,7 +498,7 @@ def draw_mbst_text(component):
     return label
     
 def draw_mbst_text_area(component):
-    textinput = TextInput(text=component['properties'].get('text', ""), multiline=True)
+    textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True)
     # textinput.bind(on_text_validate=on_enter)
     # textinput.bind(text=on_text)
     return textinput
@@ -720,7 +748,7 @@ class ScrollableContent(ScrollView):#BoxLayout
             # когда нужно посмотреть "широким взглядом" мы расскоментируем "ктулху"
             #   boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
             #   for i in range(5):
-            #     button = Button(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
+            #     button = MyButton(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
             #     boxcontainer.add_widget(button)
             #     boxcontainer.do_layout()
             #   boxcontainer.do_layout()

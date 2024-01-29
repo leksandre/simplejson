@@ -10,6 +10,8 @@ class MyBoxLayout(BoxLayout):
         self.bind(minimum_height=self.setter('height'))
         self.bind(size=self._update_background)
         self.componentMbst = componentMbst
+        # self.padding=1
+        # self.spacing=30
         if componentMbst:
           directionMbst = componentMbst.get('properties',[]).get('direction',False)
           if directionMbst:
@@ -23,6 +25,21 @@ class MyBoxLayout(BoxLayout):
     def add_widget(self, widget, index=0):
         super(MyBoxLayout, self).add_widget(widget, index)
         self.do_layout()
+        # if self.orientation=='vertical':
+        
+            # self.height = self.height + widget.height 
+        
+            # self.height = max(child.height for child in self.children)
+            
+            # children = self.children
+            # max = 0
+            # for child in children:
+            #     print('Carousel_item_child.height',child.height)    
+            #     if child.height>max:
+            #         max = child.height
+            # self.height = max
+            # if self.componentMbst:
+            #     print('Carousel final height',self.height,self.componentMbst['properties']['backendname'])
 
     def _update_background(self, instance, value):
         self.canvas.before.clear()
