@@ -18,9 +18,9 @@ class MyCarousel(Carousel):
     
     def __init__(self, componentMbst=False, **kwargs):
         super(MyCarousel, self).__init__(**kwargs)
+        self.componentMbst = componentMbst
         self.bind(children=self._on_children_changed)
         self.bind(height=self.setter('height'))
-        self.componentMbst = componentMbst
 
     def _on_children_changed(self, instance, value):
         children = self.children

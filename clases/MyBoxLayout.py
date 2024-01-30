@@ -7,11 +7,12 @@ from random import random
 class MyBoxLayout(BoxLayout):
     def __init__(self, componentMbst=False, **kwargs):
         super(MyBoxLayout, self).__init__(**kwargs)
-        self.bind(minimum_height=self.setter('height'))
-        self.bind(size=self._update_background)
         self.componentMbst = componentMbst
+        self.bind(minimum_height=self.setter('height'))
+        self.bind(height=self.setter('height'))
+        self.bind(size=self._update_background)
         # self.padding=1
-        # self.spacing=30
+        # self.spacing=1
         if componentMbst:
           directionMbst = componentMbst.get('properties',[]).get('direction',False)
           if directionMbst:
@@ -25,9 +26,10 @@ class MyBoxLayout(BoxLayout):
     def add_widget(self, widget, index=0):
         super(MyBoxLayout, self).add_widget(widget, index)
         self.do_layout()
+        
         # if self.orientation=='vertical':
         
-            # self.height = self.height + widget.height 
+        #     self.height = self.height + widget.height 
         
             # self.height = max(child.height for child in self.children)
             

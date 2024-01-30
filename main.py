@@ -1,10 +1,14 @@
 import kivy
 kivy.require('1.0.7')
+
 from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
+
 from clases.MyBoxLayout import MyBoxLayout
 from clases.MyCarousel import MyCarousel
 from clases.MyButton import MyButton
 from clases.MyLabel import MyLabel
+from clases.MyStackLayout import MyStackLayout
+
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
@@ -272,7 +276,7 @@ def processComponents(component, ui_components):
     if 'components' in component:
         
     #  #debug   
-    #  if component.get('properties',None).get('backendname',None):
+    #  if component.get('properties',{}).get('backendname',{}):
     #     if component['properties']['backendname'] == 'SlideItem-f5f504c8':
     #         print("draw_mbst_slider_slide",component['properties']['backendname'])
                 
@@ -283,7 +287,7 @@ def processComponents(component, ui_components):
         # print('- ',elemData)
         
         # #debug   
-        # if component.get('properties',None).get('backendname',None):
+        # if component.get('properties',{}).get('backendname',{}):
         #     if component['properties']['backendname'] == 'SlideItem-f5f504c8':
         #         print("elemData",elemData['properties']['backendname'])
                 
@@ -299,18 +303,20 @@ def processComponents(component, ui_components):
 
 def processItems(component, ui_components):
     if 'items' in component:
-      fullColWidth = 0  
-      for elem in component['items']:
-          
-    # специально для высчитывания ширины колнок во flexrow 
-       if elem.get('properties',None).get('colwidth',None):
-        fullColWidth += int(elem['properties']['colwidth'])
+      fullColWidth = 12# мы так давным давно решили
+        
+    # если мы когда инбудь откажемся от 12теричной системы колонок то надо удет использовать подоный алгоритм
+    #   fullColWidth = 0  
+    #   for elem in component['items']:
+    # # специально для высчитывания ширины колнок во flexrow 
+    #    if elem.get('properties',{}).get('colwidth',{}):
+    #     fullColWidth += int(elem['properties']['colwidth'])
         
       for elem in component['items']: # если это стурктура с items
        curColWidth = -1 
     #    print('!!--aliasName',elem['aliasName'])
     #    print('!!--name',elem['name'])
-       if elem.get('properties',None).get('colwidth',None):
+       if elem.get('properties',{}).get('colwidth',{}):
         # print('!!--colwidth',elem['properties']['colwidth'])
         if fullColWidth>0:
             curColWidth = int(elem['properties']['colwidth'])/fullColWidth
@@ -394,7 +400,7 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
     # print("component Col ['css']",component['css'])
     
     #debug
-    # if component.get('properties',None).get('backendname',None):
+    # if component.get('properties',{}).get('backendname',{}):
         # if component['properties']['backendname']=='cell-be760fbc':
         #     print("component Col ['properties']['backendname']",component['properties']['backendname'], size_hint)
         #     if size_hint==-1:
@@ -410,7 +416,7 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
         return False
     
     if size_hint>0:
-        elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None), componentMbst = component)
+        elem = MyBoxLayout(orientation='vertical', size_hint=(size_hint, None), componentMbst = component) #size_hint_max=(size_hint, None),
  
         # if 'backendname' in component['properties']:
         #     print('backendname final size_hint',component['properties']['backendname'], size_hint)
@@ -433,8 +439,8 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
 
 
 def draw_mbst_flexrow(component): #has items!
-    layout = MyBoxLayout(orientation='horizontal', size_hint=(1, None), componentMbst = component) #, minimum_height=100
-    # layout.bind(minimum_height=layout.setter('height'))
+    layout = MyStackLayout(orientation='lr-tb', size_hint=(1, None), componentMbst = component) #, minimum_height=100, size_hint=(None, None), size=(400, 400)
+    
     processItems(component,[layout])
     
      # вручную высчитываем необходимую высоту элемента
@@ -449,6 +455,7 @@ def draw_mbst_flexrow(component): #has items!
     return layout
 
 def draw_mbst_video_player(component):
+    return False
     # print("-component properties ['properties']['source'] ",component['properties']['source'])
     # player = VideoPlayer(source='myvideo.avi', state='play',options={'eos': 'loop'}) #VideoPlayerAnnotation
     player = VideoPlayer(source='myvideo.avi', state='play',options={'fit_mode': 'contain'})
@@ -456,28 +463,28 @@ def draw_mbst_video_player(component):
 
 def draw_mbst_button(component):
     # print("component Button ['css']",component['css'])
-    btnSimple = MyButton(text=component['properties'].get('text', "")) # , size_hint=(1, None), height=10, width=10, padding=(2,2), line_height = 10
+    btnSimple = MyButton(text=component['properties'].get('text', ""), componentMbst = component) # , size_hint=(1, None), height=10, width=10, padding=(2,2), line_height = 10
     # btn2e.bind(on_press=)
     # btn2e.bind(on_release=)
     return btnSimple
 
 def draw_mbst_image(component):
     this_url = False
-    if component.get('properties', None).get('image', None).get('url', None):
+    if component.get('properties', {}).get('image', {}).get('url', {}):
         try:
             this_url = component['properties']['image']['url']
             print("-------component properties ['properties']['image']'url' ", this_url)
         except KeyError as e:
             print(' KeyError  ' + str(e))
     else:    
-     if component.get('properties', None).get('image', None).get('attributes', None).get('Url', None):
-        try:
+      try:
+        if component.get('properties', {}).get('image', {}).get('attributes', {}).get('Url', {}):
             this_url = component['properties']['image']['attributes']['Url']
             print("-------component properties ['properties']['image']['attributes']'url' ", this_url)
-        except KeyError as e:
+      except AttributeError as e:
             print(' KeyError  ' + str(e))
         
-    # if component.get('properties', None).get('backendname', None):
+    # if component.get('properties', {}).get('backendname', {}):
     #     bn = component['properties']['backendname']
     #     if bn == 'Image-384508c6':
     #         print("component image ['properties']['backendname']",bn)
@@ -538,6 +545,8 @@ def processHtOnComponent(component):
 
 
 def createComponentUix(el, size_hint=0):
+    if not 'name' in el:
+        return False
     # отрисовываем компоненты и возврщаем их вызвавшему родительскому компоненту
     if el['name'] == 'mbst-flexrow':
         return draw_mbst_flexrow(el)
@@ -609,8 +618,11 @@ def processComponent(component, size_hint = 0):
         return uixCmp
         
     
-    print('!-aliasName',el['aliasName'])
-    print('!-name',el['name'])
+    # try:
+    #     print('!-aliasName',el['aliasName'])
+    #     print('!-name',el['name'])
+    # except AttributeError:
+    #     pass
     return False
 
 
@@ -736,7 +748,7 @@ class ScrollableContent(ScrollView):#BoxLayout
         self.orientation = 'vertical'
         self.size_hint=(1, 1)
 
-        content_layout = MyBoxLayout(orientation='vertical', size_hint=(1, None), spacing=0)
+        content_layout = MyBoxLayout(orientation='vertical', size_hint=(1, None))#, spacing=0
         # content_layout.bind(minimum_height=content_layout.setter('height'))
         
         foundHt = extractHtFromDict(screen)
