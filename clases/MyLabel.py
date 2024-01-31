@@ -1,11 +1,11 @@
 import kivy
 kivy.require('1.0.7')
-from clases.MyBoxLayout import MyBoxLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-from kivy.graphics import Color, Rectangle
-from kivy.uix.scrollview import ScrollView
+# from clases.MyBoxLayout import MyBoxLayout
+# from kivy.uix.boxlayout import BoxLayout
+# from kivy.uix.anchorlayout import AnchorLayout
+# from kivy.graphics import Color, Rectangle
+# from kivy.uix.scrollview import ScrollView
 
 from random import random
 
