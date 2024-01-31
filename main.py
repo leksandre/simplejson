@@ -152,6 +152,10 @@ def simpleRequest(isGet = False, checkStruct = False, showresp = False, **params
         
         print('status_code:'+str(r.status_code))
         
+        if r.status_code == 501 and (str(params['url']).find('/api/v8/refresh')>-1):# if token fail
+            time.sleep(random.randint(2,5));
+            return auth(force = 1)
+            
         if r.status_code == 401:# if token expired
             print('--------- try refresh token')
             res_refresh = refresh_auth()
@@ -226,7 +230,15 @@ def refresh_auth():
     print('--------- try refresh token')
     
     r = simpleRequest(isGet=True, url = url_e)
-    data = r.json()
+
+    try:
+        if not r:
+            print('r',r)
+            return False
+        data = r.json()
+    except:
+        return False
+    
     # print('data json 0',data)
     if not 'access_token' in data:
         print('!!! not access_token ' + str(data))
@@ -242,20 +254,29 @@ def refresh_auth():
     except KeyError as e:
         print('!!! over KeyError 43 ' + str(e))
         return False
-    return True
+    return r
     
-def auth():
+def auth(force = False):
     global access_token
     global refresh_token
     
-    if len(access_token)>0:
-        return True
+    if not force:
+        if len(access_token)>0:
+            return True
     
     PARAMS = {'login':log_e,'password':pass_e}
     url_e = urlD+(url_a.replace('userLogin555',log_e)).replace('userPassword888',pass_e)
     
     r = simpleRequest(isGet=True, url = url_e, params = PARAMS)
-    data = r.json()
+    
+    try:
+        if not r:
+            print('r',r)
+            return False
+        data = r.json()
+    except:
+        return False
+    
     # print('data json 0',data)
     if not 'access_token' in data:
         print('!!! not access_token ' + str(data))
@@ -270,7 +291,7 @@ def auth():
     except KeyError as e:
         print('!!! over KeyError 43 ' + str(e))
         return False
-    return True
+    return r
 
 def processComponents(component, ui_components):
     if 'components' in component:
