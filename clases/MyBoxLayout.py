@@ -27,12 +27,22 @@ class MyBoxLayout(BoxLayout):
         super(MyBoxLayout, self).add_widget(widget, index)
         self.do_layout()
         
-        # if self.orientation=='vertical':
+        # self.height = self.height + 60
         
+        
+        # if self.orientation=='vertical':
         #     self.height = self.height + widget.height 
         
+        
+        
+        
+        # if self.orientation=='vertical':
             # self.height = max(child.height for child in self.children)
-            
+
+
+
+
+        # if self.orientation=='vertical':
             # children = self.children
             # max = 0
             # for child in children:

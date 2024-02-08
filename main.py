@@ -207,6 +207,15 @@ def getScreens(tables=[]):
     listId = 0
 
     r = simpleRequest(isGet=True, url = urlD+url_l+f"?ApplicationId={AppId}&page=1&pageSize=200", headers=Headers)
+
+    try:
+        if not r:
+            print('r',r)
+            return False
+        data = r.json()
+    except:
+        return False
+    
     data = r.json()
     # print('data json 1',data)
     
@@ -611,6 +620,84 @@ def processComponent(component, size_hint = 0):
         
     el = component
     
+    # if 'properties' in el:
+    #     if 'source' in el['properties']:
+    #         print('- source properties',el['properties']['source'])
+    #     if 'dataSource' in el['properties']:
+    #         print('- dataSource properties',el['properties']['dataSource'])
+    
+    # if 'source' in el:
+    #     print('- source',el['source'])
+    # if 'dataSource' in el:
+    #     print('- dataSource',el['dataSource'])
+    
+    # if 'loop' in el:
+    #     if 'source' in el['loop']:
+    #         print('- loop source',el['loop']['source'])
+    #     if 'dataSource' in el['loop']:
+    #         print('- loop dataSource',el['loop']['dataSource'])
+    
+    if 'properties' in el:
+        if 'loop' in el['properties']:
+            # if 'source' in el['properties']['loop']:
+            #     print('- source loop properties',el['properties']['loop']['source'])
+            if 'dataSource' in el['properties']['loop']:
+              if el['properties']['loop']['dataSource']:
+                print( '- dataSource loop properties',(el['properties']['loop']['dataSource']).lower() )
+                for k,v in store.find(name=el['properties']['loop']['dataSource']):
+                        print('dataSource len k', len(k))
+                        print('dataSource type k', type(k))
+                        print('dataSource len v', len(v))
+                        print('dataSource type v', type(v))
+                        if isinstance(v, str):
+                            print(f"v = {v}") # такого вообще не бывает
+                        if isinstance(k, str):
+                            print(f"k = {k}") # здесь имя которое мы задали в name когда мы сохраняли в store
+                        if isinstance(v, dict):
+                            for v0 in v.items():
+                                print(f"v0 = {type(v0)}")
+                                if isinstance(v0, tuple):
+                                    for element in v0:
+                                        # print(type(element))
+                                        if isinstance(element, str):
+                                            print(type(element), " -- ",element[0:200]) # здесь открывается секция data
+                                        if isinstance(element, list):
+                                            if isinstance(element[0], list):
+                                                try:
+                                                    print(type(element[0]), " -- ", type(element[0][0]))
+                                                except:
+                                                    print(f'ValueError row ')
+                                                    continue
+
+                                    # [print(type(element)) for element in v0]
+                                    # print(*v0, sep="\n\n\n <-> \n\n\n")
+
+                            # for k,v0 in v:
+                            #     print(f"{k}=>{v0}")
+
+                        # for item in items:
+                        #     print('dataSource len item', len(item))
+                        #     t = type(item)
+                        #     print('dataSource type item', t)
+                        #     if isinstance(item, str):
+                        #         print(item[0:200])
+                        #     if isinstance(item, dict):
+                        #         for v in item:
+                        #             print(f"{v}")
+
+                        #         try:
+                        #             for k,v in item:
+                        #                 print(f"{k}=>{v}")
+                        #     #    except KeyError as e:
+                        #     #        pass
+                        #         except ValueError as e:
+                        #             print(f'ValueError row '+ str(e))
+                        #             continue
+                           
+            
+
+    
+    
     # print('css',el['css'])
     # print('config',el['config'])
     # if 'uuid' in el:
@@ -808,9 +895,14 @@ class TestApp(App):
     def build(self):
         if auth():
             dat = getScreens()
-            screens = dat['data']
-            for screen in screens:
-                return  parseScreen(screen)
+            if not dat:
+                print('fail server!')
+                # exit()
+                # return False
+            if 'data' in dat:
+                screens = dat['data']
+                for screen in screens:
+                    return  parseScreen(screen)
             
         btn2e = MyButton(text='some failed, exit')
         btn2e.bind(on_press=self.exitApp)
