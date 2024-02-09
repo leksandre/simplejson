@@ -57,15 +57,18 @@ if store.exists('#object#'):
 
 for key, value in store.find():
     print('-------- store item', key)
+    # print('-------- store item', "!_"+key+"_!")
     # store.delete(key)
         
 def processHashtagData(data):
     for element in data:
+        # if 1:
+        #     print(element)!!!
         if 'type' in element:
             if 'id' in element:
                 if 'attributes' in element:
                     attributes = element['attributes']
-                    print('add'+element['type'],attributes)
+                    print('add to store '+element['type'],attributes)
                     
                     # store['hashtags_'+element['type']][element['type']] = {id:element['id'], **attributes}
                     
@@ -611,6 +614,60 @@ def createComponentUix(el, size_hint=0):
     if el['name'] == 'mbst-drawer-right':
         pass
 
+def getLoopDataset(nameDataset):
+    #  for v in store.find(name=nameDataset):
+    #      print('dataSource - len', len(v))
+     for k,v in store.find(name=nameDataset):
+        print('dataSource len k', len(k))
+        print('dataSource type k', type(k))
+        print('dataSource len v', len(v))
+        print('dataSource type v', type(v))
+        if isinstance(v, str):
+            print(f"v = {v}") # такого вообще не бывает
+        if isinstance(k, str):
+            print(f"k = {k}") # здесь имя которое мы задали в name когда мы сохраняли в store
+        if isinstance(v, dict):
+            for v0 in v.items():
+                print(f"v0 = {type(v0)}")
+                if isinstance(v0, tuple):
+                    for element in v0:
+                        # print(type(element))
+                        if isinstance(element, str):
+                            print(type(element), " -- ",element[0:200]) # здесь открывается секция data
+                        if isinstance(element, list):
+                            if isinstance(element[0], list):
+                                try:
+                                    print(" type [0] ", type(element[0]), " [0][0] ", type(element[0][0]))
+                                except:
+                                    print(f'ValueError row ')
+                                    continue
+
+                    # [print(type(element)) for element in v0]
+                    # print(*v0, sep="\n\n\n <-> \n\n\n")
+
+            # for k,v0 in v:
+            #     print(f"{k}=>{v0}")
+
+        # for item in items:
+        #     print('dataSource len item', len(item))
+        #     t = type(item)
+        #     print('dataSource type item', t)
+        #     if isinstance(item, str):
+        #         print(item[0:200])
+        #     if isinstance(item, dict):
+        #         for v in item:
+        #             print(f"{v}")
+
+        #         try:
+        #             for k,v in item:
+        #                 print(f"{k}=>{v}")
+        #     #    except KeyError as e:
+        #     #        pass
+        #         except ValueError as e:
+        #             print(f'ValueError row '+ str(e))
+        #             continue
+            
+            
     
 def processComponent(component, size_hint = 0):
 
@@ -643,58 +700,9 @@ def processComponent(component, size_hint = 0):
             #     print('- source loop properties',el['properties']['loop']['source'])
             if 'dataSource' in el['properties']['loop']:
               if el['properties']['loop']['dataSource']:
-                print( '- dataSource loop properties',(el['properties']['loop']['dataSource']).lower() )
-                for k,v in store.find(name=el['properties']['loop']['dataSource']):
-                        print('dataSource len k', len(k))
-                        print('dataSource type k', type(k))
-                        print('dataSource len v', len(v))
-                        print('dataSource type v', type(v))
-                        if isinstance(v, str):
-                            print(f"v = {v}") # такого вообще не бывает
-                        if isinstance(k, str):
-                            print(f"k = {k}") # здесь имя которое мы задали в name когда мы сохраняли в store
-                        if isinstance(v, dict):
-                            for v0 in v.items():
-                                print(f"v0 = {type(v0)}")
-                                if isinstance(v0, tuple):
-                                    for element in v0:
-                                        # print(type(element))
-                                        if isinstance(element, str):
-                                            print(type(element), " -- ",element[0:200]) # здесь открывается секция data
-                                        if isinstance(element, list):
-                                            if isinstance(element[0], list):
-                                                try:
-                                                    print(type(element[0]), " -- ", type(element[0][0]))
-                                                except:
-                                                    print(f'ValueError row ')
-                                                    continue
-
-                                    # [print(type(element)) for element in v0]
-                                    # print(*v0, sep="\n\n\n <-> \n\n\n")
-
-                            # for k,v0 in v:
-                            #     print(f"{k}=>{v0}")
-
-                        # for item in items:
-                        #     print('dataSource len item', len(item))
-                        #     t = type(item)
-                        #     print('dataSource type item', t)
-                        #     if isinstance(item, str):
-                        #         print(item[0:200])
-                        #     if isinstance(item, dict):
-                        #         for v in item:
-                        #             print(f"{v}")
-
-                        #         try:
-                        #             for k,v in item:
-                        #                 print(f"{k}=>{v}")
-                        #     #    except KeyError as e:
-                        #     #        pass
-                        #         except ValueError as e:
-                        #             print(f'ValueError row '+ str(e))
-                        #             continue
-                           
-            
+                nameDataset = (el['properties']['loop']['dataSource']).lower() 
+                print( '- dataSource loop properties',nameDataset)
+                getLoopDataset(nameDataset)
 
     
     
@@ -775,9 +783,10 @@ def getHashTags(screenId, ht):
     
     
     eventsFilterHt = list(filter(lambda x: x.lower().startswith('eventsfilter:'), ht))
-    if len(objectHt)>0:
+    if len(eventsFilterHt)>0:
         fullHt = [ {"tag": "#"+str(x)+"#", "objectId": ObjectId, "pagination": {"page": 1, "pageSize": 10, "showButtonUp": False, "showInformer": True}} for x in eventsFilterHt]
-        
+        print('eventsFilterHt',eventsFilterHt)
+        print('fullHt',fullHt)
         json_details = {"applicationId": AppId, "objectId": ObjectId, "extraParams": {"Screen": {
             "id": screenId}, "Globals": {"applicationId": AppId, "objectId": ObjectId}}, "tags": fullHt}
 
