@@ -311,7 +311,7 @@ def auth(force = False):
         return False
     return r
 
-def processComponents(component, ui_components):
+def processComponents(component, ui_components, loopdata={}):
     if 'components' in component:
         
     #  #debug   
@@ -331,16 +331,20 @@ def processComponents(component, ui_components):
         #         print("elemData",elemData['properties']['backendname'])
                 
         if 1:
-            foradding = processComponent(elemData)
-            if foradding:
-                ui_components[0].add_widget(foradding)
+            foradding = processComponent(elemData, loopdata=loopdata)
+            addItTo(ui_components[0], foradding)
     
 
 
+def addItTo(loca, foradding):
+    if foradding:  
+        if isinstance(foradding,list):
+            for iten in foradding:
+                loca.add_widget(iten)
+        else:
+            loca.add_widget(foradding)
 
-
-
-def processItems(component, ui_components):
+def processItems(component, ui_components, loopdata={}):
     if 'items' in component:
       fullColWidth = 12# мы так давным давно решили
         
@@ -361,9 +365,11 @@ def processItems(component, ui_components):
             curColWidth = int(elem['properties']['colwidth'])/fullColWidth
     
        # варинат 1 отправляем в "конвейер", т.е. создаём "бокс" для каждого элемента из items и обрабатываем его содержимое соответственно "линейно", но без влияния на родительский компонент
-       foradding = processComponent(elem, size_hint = curColWidth)
-       if foradding:
-        ui_components[0].add_widget(foradding)
+       foradding = processComponent(elem, size_hint = curColWidth, loopdata=loopdata)
+       addItTo(ui_components[0], foradding)
+    #    if foradding:
+    #     ui_components[0].add_widget(foradding)
+    
         
        # вариант 2 сами реагируем на структуру компонента пропуская обработку элементов "обёрток" mbst-slider__slide mbst-flexrow__col
     #    if 'components' in elem:
@@ -386,7 +392,7 @@ def processItems(component, ui_components):
 #     processComponents(component,[elem])
 #     return elem
 
-def draw_mbst_slider_slide(component):
+def draw_mbst_slider_slide(component, loopdata={}):
     elem = MyBoxLayout(orientation='vertical',size_hint=(1, None), componentMbst = component)#, minimum_height=10, spacing=20
     # elem.bind(minimum_width=elem.setter('width'))
     # elem.bind(minimum_height=elem.setter('height'))
@@ -413,7 +419,7 @@ def draw_mbst_slider_slide(component):
         
 
                     
-def draw_mbst_slider(component): #has items!
+def draw_mbst_slider(component, loopdata={}): #has items!
     # print("------component Slider Carousel ['css']",component['css'])
     carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50, componentMbst = component )
     
@@ -421,7 +427,7 @@ def draw_mbst_slider(component): #has items!
     # carousel = MyBoxLayout(orientation='vertical',size_hint = (1, None), opacity=0.50 )
     
     # carousel.bind(minimum_height=carousel.setter('height'))
-    processItems(component,[carousel])
+    processItems(component,ui_components=[carousel], loopdata=loopdata)
     # TabbedPanel #??????
     
      # вручную высчитываем необходимую высоту элемента
@@ -435,7 +441,7 @@ def draw_mbst_slider(component): #has items!
            
     return carousel
 
-def draw_mbst_flexrow_col(component, size_hint = 0):
+def draw_mbst_flexrow_col(component, size_hint = 0, loopdata={}):
     # print("component Col ['css']",component['css'])
     
     #debug
@@ -477,10 +483,10 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
     return elem
 
 
-def draw_mbst_flexrow(component): #has items!
+def draw_mbst_flexrow(component, loopdata={}): #has items!
     layout = MyStackLayout(orientation='lr-tb', size_hint=(1, None), componentMbst = component) #, minimum_height=100, size_hint=(None, None), size=(400, 400)
     
-    processItems(component,[layout])
+    processItems(component, ui_components = [layout], loopdata=loopdata)
     
      # вручную высчитываем необходимую высоту элемента
     # if 'backendname' in component['properties']:
@@ -556,7 +562,7 @@ def draw_mbst_link(component):
     # widget.bind(on_ref_press=print_it)
     return widget
 
-def processHtOnComponent(component):
+def processHtOnComponent(component, loopdata):
     
     text = json.dumps(component)
     ht = extractHtFromDict(text)
@@ -570,6 +576,39 @@ def processHtOnComponent(component):
                 if p_ht[1] in ht_v:
                     # print('tag found ',h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
                     text = text.replace('#'+h+'#',ht_v.get(p_ht[1]))
+
+
+            # работа с за лупами
+            if p_ht[0].lower()=='loop':
+                # print('ht loop --',h)
+                if p_ht[1].lower() in loopdata:
+                    my_dict = loopdata[p_ht[1].lower()]
+                    if p_ht[2] in my_dict:
+                        # print(type(my_dict[p_ht[2]]))
+                        if isinstance(my_dict[p_ht[2]],dict):
+                          if p_ht[3] in my_dict[p_ht[2]]:
+                              text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]])
+
+                        if isinstance(my_dict[p_ht[2]],str):
+                              text = text.replace('#'+h+'#',my_dict[p_ht[2]])
+
+                        # if isinstance(my_dict[p_ht[2]],int):
+                        #   print('ht loop --',h, p_ht[2], my_dict[p_ht[2]]) 
+                        # else:        
+                        #   if len(my_dict[p_ht[2]])>0:
+                        #     print('ht loop --',h, p_ht[2], my_dict[p_ht[2]]) 
+
+
+
+
+
+                    # print('ht loop count vals --',len(my_dict))
+                    # first_key = next(iter(my_dict))
+                    # first_value = my_dict[first_key]
+                    # print('ht loop vals --',first_value )
+                    
+                    
+
             # else:
             #     print('tag not found',('#'+p_ht[0].lower()+'#'))
 
@@ -586,19 +625,19 @@ def processHtOnComponent(component):
     return component
 
 
-def createComponentUix(el, size_hint=0):
+def createComponentUix(el, size_hint=0, loopdata={}):
     if not 'name' in el:
         return False
     # отрисовываем компоненты и возврщаем их вызвавшему родительскому компоненту
     if el['name'] == 'mbst-flexrow':
-        return draw_mbst_flexrow(el)
+        return draw_mbst_flexrow(el, loopdata=loopdata)
     if el['name'] == 'mbst-slider':
-        return draw_mbst_slider(el)
+        return draw_mbst_slider(el, loopdata=loopdata)
     # подэлементы от flexrow и slider
     if el['name'] == 'mbst-flexrow__col':
-        return draw_mbst_flexrow_col(el, size_hint)
+        return draw_mbst_flexrow_col(el, size_hint, loopdata=loopdata)
     if el['name'] == 'mbst-slider__slide':
-        return draw_mbst_slider_slide(el) 
+        return draw_mbst_slider_slide(el, loopdata=loopdata) 
 
 
     if 'items' in el:
@@ -703,7 +742,7 @@ def getLoopDataset(nameDataset):
             
             
     
-def processComponent(component, size_hint = 0):
+def processComponent(component, size_hint = 0, loopdata = {}):
 
     # for elem in component:
     #     print('-component',elem)
@@ -728,6 +767,9 @@ def processComponent(component, size_hint = 0):
     #     if 'dataSource' in el['loop']:
     #         print('- loop dataSource',el['loop']['dataSource'])
     
+    aliasName = ''
+    loopdataGenerator = [{}]
+
     isloop = False
     if 'properties' in el:
         if 'loop' in el['properties']:
@@ -740,41 +782,55 @@ def processComponent(component, size_hint = 0):
                         aliasName = (el['properties']['loop']['aliasName']).lower() 
 
                         # print( '- dataSource loop properties',nameDataset)
+                        # print( '- dataSource loop properties',aliasName)
                         # loopdataGenerator = getLoopDataset(nameDataset) # передават по цепочке генератор или передавать весь лист значений?
 
-                        itemsLoop = list(getLoopDataset(nameDataset)) # пока поработам с обычнцми листами, потом если что, перейдем на генераторы (один хер объёмы резевируемой памяти не изменяться)
-                        # pprint.pprint( itemsLoop) 
-                        
+                        loopdataGenerator = list(getLoopDataset(nameDataset)) # пока поработам с обычнцми листами, потом если что, перейдем на генераторы (один хер объёмы резевируемой памяти не изменяться)
+                        # pprint.pprint( loopdataGenerator) 
                         # print('loopdataGenerator:',type(loopdataGenerator))
-                    
-                        # for line1 in loopdataGenerator:
-                        #     pprint.pprint( line1)
 
-    
-    
+                         
+
+
+
+    # if loopdata:
+    #     print('loopdata',len(loopdata))
     # print('css',el['css'])
     # print('config',el['config'])
     # if 'uuid' in el:
     #     print('uuid',el['uuid'])
-    
-    el = processHtOnComponent(el)#заменяем хештеги
+                        
+    uixCmpList = []                    
+    for line1 in loopdataGenerator:
 
-    uixCmp = createComponentUix(el, size_hint)
-    if uixCmp:
-        
-        try:
-            pass
-            # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
-            # uixCmp.height = 120
-            # uixCmp.line_height = 120 # Label.line_height
-            # uixCmp.line_height = 120 # TextInput.line_height
-            # uixCmp.minimum_height = 120 # TextInput.minimum_height
-            #Widget.height
-            # uixCmp.size_hint=(1, None)
-        except AttributeError:
-            pass
-        
-        return uixCmp
+        # pprint.pprint('line1', line1)
+        # if aliasName:
+        #     print('____aliasName____', aliasName)
+
+        if len(aliasName)>0:
+            loopdata[aliasName] = line1 # да, блин, кажется надо сохранять все данные для лупа в лист и никаких генераторов... вроде бы
+
+        #было
+        # el = processHtOnComponent(el)#заменяем хештеги
+        # uixCmp = createComponentUix(el, size_hint)
+
+        #стало, переходим на лупы
+        el = processHtOnComponent(el, loopdata=loopdata)#заменяем хештеги
+        uixCmp = createComponentUix(el, size_hint, loopdata=loopdata)   
+
+        if uixCmp:
+            try:
+                pass
+                # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
+                # uixCmp.height = 120
+                # uixCmp.line_height = 120 # Label.line_height
+                # uixCmp.line_height = 120 # TextInput.line_height
+                # uixCmp.minimum_height = 120 # TextInput.minimum_height
+                #Widget.height
+                # uixCmp.size_hint=(1, None)
+            except AttributeError:
+                pass
+            uixCmpList.append(uixCmp) #тут тоже можно возврщать генератор, но надо ли....
         
     
     # try:
@@ -782,7 +838,7 @@ def processComponent(component, size_hint = 0):
     #     print('!-name',el['name'])
     # except AttributeError:
     #     pass
-    return False
+    return uixCmpList
 
 
 
@@ -920,9 +976,10 @@ class ScrollableContent(ScrollView):#BoxLayout
         hashtags = getHashTags(screen.get("id", 0),foundHt)
         for el in screen['attributes']['components']:
             foradding = processComponent(el)
-            if foradding:
-                
-            # когда нужно посмотреть "широким взглядом" мы расскоментируем "ктулху"
+            addItTo(content_layout, foradding)
+
+            # когда нужно посмотреть "широким взглядом" мы закомментируем предидущю строку и расскоментируем "ктулху"
+            # if foradding:
             #   boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
             #   for i in range(5):
             #     button = MyButton(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
@@ -930,8 +987,9 @@ class ScrollableContent(ScrollView):#BoxLayout
             #     boxcontainer.do_layout()
             #   boxcontainer.do_layout()
             #   content_layout.add_widget(boxcontainer)
-                
-              content_layout.add_widget(foradding)
+            #   content_layout.add_widget(foradding)
+
+              
         self.add_widget(content_layout)    
 
         # scroll_view = ScrollView(size_hint=(1, 1))
