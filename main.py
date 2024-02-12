@@ -35,6 +35,7 @@ import json
 import html2text
 import re
 import validators
+import pprint
 
 store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
 
@@ -63,12 +64,14 @@ for key, value in store.find():
 def processHashtagData(data):
     for element in data:
         # if 1:
-        #     print(element)!!!
+        #     print('element data',element)#!!!
         if 'type' in element:
+            # print('______ type data')
             if 'id' in element:
+                # print('______ id element')
                 if 'attributes' in element:
                     attributes = element['attributes']
-                    print('add to store '+element['type'],attributes)
+                    # print('______ add to store '+element['type'],attributes)
                     
                     # store['hashtags_'+element['type']][element['type']] = {id:element['id'], **attributes}
                     
@@ -76,10 +79,13 @@ def processHashtagData(data):
 
         else:
             if 'id' in element:
+                # print('______ id element')
                 if 'attributes' in element:
+                    # print('______ attributes element')
                     attributes = element['attributes']
                     if 'tag' in attributes:
                         # store['hashtags_'+attributes['tag']][attributes['tag']] = {data:attributes['data']}
+                        # print('______ add to store '+ (attributes['tag']).lower() )
                         store.put((attributes['tag']).lower(), name=attributes['tag'], data=[attributes['data']])  
                         
                         # # store['hashtags'][attributes['tag']] = {data:{k: v for v, k in enumerate([attributes['data'][0]])} }
@@ -562,8 +568,11 @@ def processHtOnComponent(component):
             if store.exists('#'+p_ht[0].lower()+'#'):
                 ht_v = store.get('#'+p_ht[0].lower()+'#')
                 if p_ht[1] in ht_v:
-                    # print(h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
+                    # print('tag found ',h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
                     text = text.replace('#'+h+'#',ht_v.get(p_ht[1]))
+            # else:
+            #     print('tag not found',('#'+p_ht[0].lower()+'#'))
+
 
     try:
         componentNew = json.loads(text)
@@ -615,13 +624,34 @@ def createComponentUix(el, size_hint=0):
         pass
 
 def getLoopDataset(nameDataset):
-    #  for v in store.find(name=nameDataset):
+    # return None
+    # for key, value in store.find():
+    #     print('-------- store item', key)
+    #     if key == nameDataset:
+    #         print('!!!!!!!!!')
+     
+    print('dataSource - try to get', nameDataset)
+
+    #  for k,v in store.find(name=nameDataset):
+    #      print('dataSource - k', k)
     #      print('dataSource - len', len(v))
-     for k,v in store.find(name=nameDataset):
-        print('dataSource len k', len(k))
-        print('dataSource type k', type(k))
-        print('dataSource len v', len(v))
-        print('dataSource type v', type(v))
+
+    #  for k,v in store.find(name="#eventsfilter:mygd:data#"):
+    #      print('dataSource - k', k)
+    #      print('dataSource - len', len(v))
+
+    # for k,v in store.find(name=nameDataset): # cтал приводить хранилище в к нижнему регистру и сразу это перестало работать
+    for k, v in store.find(): # прихордиться руками перебирать стор
+      if k == nameDataset:# прихордиться руками перебирать стор
+        print('-------- store item', key)
+        if 1:
+            print('dataSource found')
+            print('dataSource len k', len(k))
+            print('dataSource type k', type(k))
+            print('dataSource len v', len(v))
+            print('dataSource type v', type(v))
+
+        # print('!!!!!!!!!')
         if isinstance(v, str):
             print(f"v = {v}") # такого вообще не бывает
         if isinstance(k, str):
@@ -633,7 +663,7 @@ def getLoopDataset(nameDataset):
                     for element in v0:
                         # print(type(element))
                         if isinstance(element, str):
-                            print(type(element), " -- ",element[0:200]) # здесь открывается секция data
+                            print(type(element), " 1 -- 200 ",element[0:200]) # здесь открывается секция data
                         if isinstance(element, list):
                             if isinstance(element[0], list):
                                 try:
@@ -641,6 +671,10 @@ def getLoopDataset(nameDataset):
                                 except:
                                     print(f'ValueError row ')
                                     continue
+                                # if isinstance(element[0][0], dict):
+                                if 1:
+                                    for line in element[0]:
+                                        yield line
 
                     # [print(type(element)) for element in v0]
                     # print(*v0, sep="\n\n\n <-> \n\n\n")
@@ -694,15 +728,27 @@ def processComponent(component, size_hint = 0):
     #     if 'dataSource' in el['loop']:
     #         print('- loop dataSource',el['loop']['dataSource'])
     
+    isloop = False
     if 'properties' in el:
         if 'loop' in el['properties']:
             # if 'source' in el['properties']['loop']:
             #     print('- source loop properties',el['properties']['loop']['source'])
             if 'dataSource' in el['properties']['loop']:
-              if el['properties']['loop']['dataSource']:
-                nameDataset = (el['properties']['loop']['dataSource']).lower() 
-                print( '- dataSource loop properties',nameDataset)
-                getLoopDataset(nameDataset)
+                if 'aliasName' in el['properties']['loop']:
+                    if el['properties']['loop']['dataSource'] and el['properties']['loop']['aliasName'] :
+                        nameDataset = (el['properties']['loop']['dataSource']).lower() 
+                        aliasName = (el['properties']['loop']['aliasName']).lower() 
+
+                        # print( '- dataSource loop properties',nameDataset)
+                        # loopdataGenerator = getLoopDataset(nameDataset) # передават по цепочке генератор или передавать весь лист значений?
+
+                        itemsLoop = list(getLoopDataset(nameDataset)) # пока поработам с обычнцми листами, потом если что, перейдем на генераторы (один хер объёмы резевируемой памяти не изменяться)
+                        # pprint.pprint( itemsLoop) 
+                        
+                        # print('loopdataGenerator:',type(loopdataGenerator))
+                    
+                        # for line1 in loopdataGenerator:
+                        #     pprint.pprint( line1)
 
     
     
@@ -713,9 +759,6 @@ def processComponent(component, size_hint = 0):
     
     el = processHtOnComponent(el)#заменяем хештеги
 
-        
-
-    
     uixCmp = createComponentUix(el, size_hint)
     if uixCmp:
         
@@ -770,7 +813,7 @@ def getHashTags(screenId, ht):
         # print(r)
         data = r.json()
         print(data)
-        print('len(data)',len(r.text))
+        print('len(data)1 ',len(r.text))
         if not 'data' in data:
             print(' not data 1 ' + str(data))
             return False
@@ -800,7 +843,7 @@ def getHashTags(screenId, ht):
         # print(r)
         data = r.json()
         print(r.text[0:200])
-        print('len(data)',len(r.text))
+        print('len(data) 0 ',len(r.text))
         if not 'data' in data:
             print(' not data 1 ' + str(data))
             return False
@@ -810,8 +853,8 @@ def getHashTags(screenId, ht):
     
     
 def filterTags(x):
-    if x.lower().startswith('loop:'):
-        return False
+    # if x.lower().startswith('loop:'):
+    #     return False
     if x.lower().startswith('variable:'):
         return False
     if x.find(':')==-1:
@@ -823,16 +866,21 @@ def extractHtFromDict(screen):
         text = screen
     else:
         text = json.dumps(screen)
-    # print('text screen',text[:400])
+
+    # if text.find('#Loop:')>-1:
+    #     print('-- #Loop: text screen',text[text.find('#Loop:')-10:text.find('#Loop:')+100])
+
     foundHt = []
     try:
-        found = re.findall(r'\#([\w:@]*)\#', text)
+        found = re.findall(r"#([\w:@]*)#", text)
         found = list(set(found))
         foundHt = list(filter(lambda x: filterTags(x), found))
     except AttributeError:
         pass
+
     # if foundHt:
     #     print('found', foundHt)
+        
     return foundHt
 
 def parseScreen(screen):
