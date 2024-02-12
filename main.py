@@ -562,6 +562,13 @@ def draw_mbst_link(component):
     # widget.bind(on_ref_press=print_it)
     return widget
 
+def try_parse_int(value):
+    try:
+        result = int(value)
+        return result
+    except ValueError:
+        return None
+    
 def processHtOnComponent(component, loopdata):
     
     text = json.dumps(component)
@@ -584,13 +591,25 @@ def processHtOnComponent(component, loopdata):
                 if p_ht[1].lower() in loopdata:
                     my_dict = loopdata[p_ht[1].lower()]
                     if p_ht[2] in my_dict:
-                        # print(type(my_dict[p_ht[2]]))
+                        # if 'backend@files'==p_ht[2]:
+                        #     print('backend@files',h,type(my_dict[p_ht[2]]))
                         if isinstance(my_dict[p_ht[2]],dict):
                           if p_ht[3] in my_dict[p_ht[2]]:
                               text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]])
 
                         if isinstance(my_dict[p_ht[2]],str):
                               text = text.replace('#'+h+'#',my_dict[p_ht[2]])
+
+                        if isinstance(my_dict[p_ht[2]],list):
+                            # print('ht list loop --',h)
+                            index1 = try_parse_int(p_ht[3])
+                            if index1:
+                            #  if index1 not in my_dict[p_ht[2]]:
+                            #      print('error index',h)
+                             if index1 in my_dict[p_ht[2]]:
+                              if isinstance(my_dict[p_ht[2]][index1],dict):
+                                if p_ht[4] in my_dict[p_ht[2]][p_ht[3]]:
+                                    text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]][p_ht[4]])
 
                         # if isinstance(my_dict[p_ht[2]],int):
                         #   print('ht loop --',h, p_ht[2], my_dict[p_ht[2]]) 
@@ -669,7 +688,7 @@ def getLoopDataset(nameDataset):
     #     if key == nameDataset:
     #         print('!!!!!!!!!')
      
-    print('dataSource - try to get', nameDataset)
+    # print('dataSource - try to get', nameDataset)
 
     #  for k,v in store.find(name=nameDataset):
     #      print('dataSource - k', k)
@@ -682,13 +701,13 @@ def getLoopDataset(nameDataset):
     # for k,v in store.find(name=nameDataset): # cтал приводить хранилище в к нижнему регистру и сразу это перестало работать
     for k, v in store.find(): # прихордиться руками перебирать стор
       if k == nameDataset:# прихордиться руками перебирать стор
-        print('-------- store item', key)
-        if 1:
-            print('dataSource found')
-            print('dataSource len k', len(k))
-            print('dataSource type k', type(k))
-            print('dataSource len v', len(v))
-            print('dataSource type v', type(v))
+        # print('-------- store item', key)
+        # if 1:
+        #     print('dataSource found')
+        #     print('dataSource len k', len(k))
+        #     print('dataSource type k', type(k))
+        #     print('dataSource len v', len(v))
+        #     print('dataSource type v', type(v))
 
         # print('!!!!!!!!!')
         if isinstance(v, str):
