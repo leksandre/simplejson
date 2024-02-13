@@ -12,6 +12,8 @@ from kivy.clock import Clock
 # 
 
 from random import random
+# from clases.MyAnchorLayout import MyAnchorLayout
+
 
 class MyLabel(Label):
     def __init__(self, text, componentMbst=False, **kwargs):
@@ -37,9 +39,21 @@ class MyLabel(Label):
 
         # self.bind(texture_size=lambda instance, value: setattr(instance, 'size', value))
 
-        self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
+        # новая версия
+        # self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
         self.bind(width=self._update_size)#логи изменений размера
         self.bind(texture_size=self._update_texture_size)
+                
+        self.height = 60
+        # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
+        
+        self.size_hint = (1, None)
+        self.halign='center' 
+        self.valign='center'
+        self.multiline = True
+
+        self.text = text
+        # self.text_size=(None, None) 
         
         # self.bind(size=lambda instance, value: setattr(self, 'text_size', value))# перенос строк
 
@@ -53,22 +67,12 @@ class MyLabel(Label):
         #   label = Label(text=text, size_hint=(1, None), height=30, text_size=(None, None), halign='left')
         # self.text_size=(1, 1)
 
-        # новая версия
-        
-        self.height = 60
-        # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
-        
-        self.size_hint = (1, None)
-        self.halign='center' 
-        self.valign='center'
-        self.multiline = True
-        # self.text_size=(None, None) 
-        
+
 
       
 
 
-        self.text = text
+        
         
         # def update_text():
         #             self.text = text
@@ -193,14 +197,14 @@ class MyLabel(Label):
 
         
 
-        print(f'----------', self.text[0:100])
-        print(f'Высота size: {self.size}')
-        print(f'Высота text_size: {self.text_size}')
-        print(f'Высота texture_size: {self.texture_size}')
+        # print(f'----------', self.text[0:100])
+        # print(f'Высота size: {self.size}')
+        # print(f'Высота text_size: {self.text_size}')
+        # print(f'Высота texture_size: {self.texture_size}')
         if self.texture_size[1]:
          if self.texture_size[1]>10:
              delta = self.texture_size[1] - self.size[1]
-             print('delta',delta)
+            #  print('delta',delta)
             #  self.text_size[1] = self.texture_size[1]
             #  self.spacing = delta
             #  if delta > 0:
@@ -245,20 +249,20 @@ class MyLabel(Label):
             pass
 
 
-        if self.parent is not None:
-            parent_type = type(self.parent).__name__
-            print('Parent type:', parent_type, self.parent.width, self.text[:20] )
-            # if parent_type=="MyBoxLayout":
+        # if self.parent is not None:
+        #     parent_type = type(self.parent).__name__
+        #     print('Parent type:', parent_type, self.parent.width, self.text[:20] )
+        #     # if parent_type=="MyBoxLayout":
                 
-            # self.size_hint_max = self.parent.size_hint 
-            # self.width = self.parent.width
+        #     # self.size_hint_max = self.parent.size_hint 
+        #     # self.width = self.parent.width
 
             
-            pass
-        else:
-            # self.size_hint = (1, None)
-            # self.size_hint_max = (1, None)
-            pass
+        #     pass
+        # else:
+        #     # self.size_hint = (1, None)
+        #     # self.size_hint_max = (1, None)
+        #     pass
 
 
 

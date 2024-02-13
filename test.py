@@ -1,14 +1,17 @@
 from kivy.app import App
 from clases.MyBoxLayout import MyBoxLayout
-# from clases.MyFloatLayout import MyFloatLayout
+from clases.MyFloatLayout import MyFloatLayout
 from kivy.uix.label import Label
 from clases.MyLabel import MyLabel
+from clases.MyAnchorLayout import MyAnchorLayout
+
 
 
 class LabelsApp(App):
     def build(self):
         # Создание графического интерфейса
         layout = MyBoxLayout(orientation='vertical')
+
         
         # Создание и добавление виджетов Label
         labels = ['Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1Label 1', 'Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2Label 2', 'Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3 3Label 3Label 3']
@@ -17,6 +20,8 @@ class LabelsApp(App):
         if 1:
           for text in labels:
             label = MyLabel(text=text)
+            # anchor_layout = MyAnchorLayout(anchor_x='center', anchor_y='top')
+            # anchor_layout.add_widget(label)
             layout.add_widget(label)
             
         # for text in labels:

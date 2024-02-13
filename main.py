@@ -519,14 +519,14 @@ def draw_mbst_image(component):
     if component.get('properties', {}).get('image', {}).get('url', {}):
         try:
             this_url = component['properties']['image']['url']
-            print("-------component properties ['properties']['image']'url' ", this_url)
+            print("-------component properties 0 ['properties']['image']'url' ", this_url)
         except KeyError as e:
             print(' KeyError  ' + str(e))
     else:    
       try:
         if component.get('properties', {}).get('image', {}).get('attributes', {}).get('Url', {}):
             this_url = component['properties']['image']['attributes']['Url']
-            print("-------component properties ['properties']['image']['attributes']'url' ", this_url)
+            print("-------component properties 1 ['properties']['image']['attributes']'url' ", this_url)
       except AttributeError as e:
             print(' KeyError  ' + str(e))
         
@@ -592,8 +592,8 @@ def processHtOnComponent(component, loopdata):
                 if p_ht[1].lower() in loopdata:
                     my_dict = loopdata[p_ht[1].lower()]
                     if p_ht[2] in my_dict:
-                        # if 'backend@files'==p_ht[2]:
-                        #     print('backend@files',h,type(my_dict[p_ht[2]]))
+                        if 'backend@files'==p_ht[2]:
+                            print('backend@files',h,type(my_dict[p_ht[2]]))
                         if isinstance(my_dict[p_ht[2]],dict):
                           if p_ht[3] in my_dict[p_ht[2]]:
                               text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]])
@@ -605,8 +605,8 @@ def processHtOnComponent(component, loopdata):
                             # print('ht list loop --',h)
                             index1 = try_parse_int(p_ht[3])
                             if index1:
-                            #  if index1 not in my_dict[p_ht[2]]:
-                            #      print('error index',h)
+                             if index1 not in my_dict[p_ht[2]]:
+                                 print('error index',h)
                              if index1 in my_dict[p_ht[2]]:
                               if isinstance(my_dict[p_ht[2]][index1],dict):
                                 if p_ht[4] in my_dict[p_ht[2]][p_ht[3]]:
@@ -717,19 +717,19 @@ def getLoopDataset(nameDataset):
             print(f"k = {k}") # здесь имя которое мы задали в name когда мы сохраняли в store
         if isinstance(v, dict):
             for v0 in v.items():
-                print(f"v0 = {type(v0)}")
+                # print(f"v0 = {type(v0)}")
                 if isinstance(v0, tuple):
                     for element in v0:
                         # print(type(element))
-                        if isinstance(element, str):
-                            print(type(element), " 1 -- 200 ",element[0:200]) # здесь открывается секция data
+                        # if isinstance(element, str):
+                        #     print(type(element), " 1 -- 200 ",element[0:200]) # здесь открывается секция data
                         if isinstance(element, list):
                             if isinstance(element[0], list):
-                                try:
-                                    print(" type [0] ", type(element[0]), " [0][0] ", type(element[0][0]))
-                                except:
-                                    print(f'ValueError row ')
-                                    continue
+                                # try:
+                                #     print(" type [0] ", type(element[0]), " [0][0] ", type(element[0][0]))
+                                # except:
+                                #     print(f'ValueError row ')
+                                #     continue
                                 # if isinstance(element[0][0], dict):
                                 if 1:
                                     for line in element[0]:
