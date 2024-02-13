@@ -4,6 +4,7 @@ kivy.require('1.0.7')
 from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
 
 from clases.MyBoxLayout import MyBoxLayout
+from clases.MyFloatLayout import MyFloatLayout
 from clases.MyCarousel import MyCarousel
 from clases.MyButton import MyButton
 from clases.MyLabel import MyLabel
@@ -1033,10 +1034,11 @@ class TestApp(App):
                 print('fail server!')
                 # exit()
                 # return False
-            if 'data' in dat:
-                screens = dat['data']
-                for screen in screens:
-                    return  parseScreen(screen)
+            else:   
+                if 'data' in dat:
+                    screens = dat['data']
+                    for screen in screens:
+                        return  parseScreen(screen)
             
         btn2e = MyButton(text='some failed, exit')
         btn2e.bind(on_press=self.exitApp)

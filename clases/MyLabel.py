@@ -6,6 +6,10 @@ from kivy.uix.label import Label
 # from kivy.uix.anchorlayout import AnchorLayout
 # from kivy.graphics import Color, Rectangle
 # from kivy.uix.scrollview import ScrollView
+from kivy.graphics import Color, Rectangle
+import time
+from kivy.clock import Clock
+# 
 
 from random import random
 
@@ -15,18 +19,72 @@ class MyLabel(Label):
         self.componentMbst = componentMbst
         #label
         # self.bind(size=self._update_size)
+
+
+        #так было
+        # self.size_hint = (1, None)
+        # self.text = text
+        # self.height = 40
+        # text_size=(1, 1)
+        # self.halign='center' 
+        # self.valign='center'
+        # self.multiline = True
+        # self.size_hint = (1, None)
+        # self.bind(texture_size=lambda instance, value: setattr(self, 'text_size', value))
+        # self.bind(texture_size=lambda instance, value: setattr(self, 'size', value))
+
+
+
+        # self.bind(texture_size=lambda instance, value: setattr(instance, 'size', value))
+
+        self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
+        self.bind(width=self._update_size)#логи изменений размера
+        self.bind(texture_size=self._update_texture_size)
+        
+        # self.bind(size=lambda instance, value: setattr(self, 'text_size', value))# перенос строк
+
+
+        #всякая херня
+        # self.bind(size=lambda instance, value: setattr(self, 'width', value[0]))# перенос строк
+        # self.bind(texture_size=lambda instance, value: setattr(self, 'height', value[1]))
+        # self.bind(texture_size=self.setter('size'))
+  # self.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+       
+        #   label = Label(text=text, size_hint=(1, None), height=30, text_size=(None, None), halign='left')
+        # self.text_size=(1, 1)
+
+        # новая версия
+        
+        self.height = 60
+        # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
+        
         self.size_hint = (1, None)
-        self.text = text
-        self.height = 40
-  
-        text_size=(1, 1)
         self.halign='center' 
         self.valign='center'
         self.multiline = True
-        self.size_hint = (1, None)
-        self.bind(size=lambda instance, value: setattr(self, 'text_size', value))
+        # self.text_size=(None, None) 
         
+
+      
+
+
+        self.text = text
         
+        # def update_text():
+        #             self.text = text
+        # Clock.schedule_once(lambda dt: update_text(), 2)
+
+
+
+        # def update_text():
+        #      print('self.texture_size',self.texture_size)
+        #      self.height = self.height +1
+        # Clock.schedule_once(lambda dt: update_text(), 2)
+
+    
+        
+
+
         
         
         #ScrollView
@@ -126,12 +184,67 @@ class MyLabel(Label):
         # label.size_hint = (1, None)
     
     #log
+    def _update_texture_size(self, instance, value):
+        
+
+        def update_text():
+                print('self.texture_size[1]',self.texture_size[1])
+                self.size[1] = self.texture_size[1]
+
+        
+
+        print(f'----------', self.text[0:100])
+        print(f'Высота size: {self.size}')
+        print(f'Высота text_size: {self.text_size}')
+        print(f'Высота texture_size: {self.texture_size}')
+        if self.texture_size[1]:
+         if self.texture_size[1]>10:
+             delta = self.texture_size[1] - self.size[1]
+             print('delta',delta)
+            #  self.text_size[1] = self.texture_size[1]
+            #  self.spacing = delta
+            #  if delta > 0:
+            #     #  self.height = self.texture_size[1]
+            #      self.height = self.height
+            #  if delta < 0:
+            #     #  self.height = self.texture_size[1]
+            #      self.height = self.height-1
+            
+        # # self.size[1] = self.texture_size[1]
+        # if self.texture_size[1]:
+        #  if self.texture_size[1]>10:
+        #     # print('self.texture_size[1]',self.texture_size[1])
+        #     # self.height = self.texture_size[1]
+        #     Clock.schedule_once(lambda dt: update_text(), 2)
+        
     def _update_size(self, instance, value):
         # self.canvas.before.clear()
         # self.size_hint = (1, None)
         # pass
-        
-        
+
+        try:
+
+
+
+            if self.size[0]>10:
+                self.text_size[0] = self.size[0]
+            # if self.size[1]>10:
+            #     self.text_size[1] = self.size[1]
+
+            # time.sleep(0.001)
+
+  
+
+                # нельзя менять забинденое свойство в его бинде
+                # self.text_size = self.texture_size
+                # self.size = self.text_size
+                # self.size = self.texture_size
+
+        except KeyError as e:
+            print(' over KeyError  ' + str(e))
+            pass
+
+
         if self.parent is not None:
             parent_type = type(self.parent).__name__
             print('Parent type:', parent_type, self.parent.width, self.text[:20] )
@@ -146,6 +259,9 @@ class MyLabel(Label):
             # self.size_hint = (1, None)
             # self.size_hint_max = (1, None)
             pass
+
+
+
         
     # def set_random_background(self):
     #     with self.canvas.before:
@@ -162,3 +278,11 @@ class MyLabel(Label):
     #     instance.rect.size = instance.size
 
 
+    def _update_background(self, instance, value):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            # Генерация случайного цвета
+            r, g, b = random(), random(), random()
+            Color(r, g, b, 1)
+            # Рисование прямоугольника с цветом фона
+            Rectangle(pos=self.pos, size=self.size)
