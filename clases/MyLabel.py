@@ -44,7 +44,7 @@ class MyLabel(Label):
         self.bind(width=self._update_size)#логи изменений размера
         self.bind(texture_size=self._update_texture_size)
                 
-        self.height = 60
+        self.height = 10
         # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
         
         self.size_hint = (1, None)

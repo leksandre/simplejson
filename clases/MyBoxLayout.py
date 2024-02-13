@@ -10,8 +10,8 @@ class MyBoxLayout(BoxLayout):
         self.componentMbst = componentMbst
         self.bind(minimum_height=self.setter('height'))
         self.bind(height=self.setter('height'))
-        # self.bind(size=self._update_background)
-        self.height=0# начнём c нуля, чтоль
+        self.bind(size=self._update_background)
+        # self.height=0# начнём c нуля, чтоль# и пропадут элементы не имеющие свойтсва "размер"
         # self.padding=1
         # self.spacing=1
         if componentMbst:
@@ -30,9 +30,9 @@ class MyBoxLayout(BoxLayout):
         
         # self.height = self.height + 60
         
-        
+        # self.height = 10
         # if self.orientation=='vertical':
-        #     self.height = self.height + widget.height 
+        #     self.height = self.height + widget.height +20
         
         
         
