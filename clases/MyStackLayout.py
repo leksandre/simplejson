@@ -18,6 +18,17 @@ class MyStackLayout(StackLayout):
     def _on_children_changed(self, instance, value):
         children = self.children
         
+        # self.height = self.height + 100
+
+        # max = 0
+        # sum = 0
+        # for child in children:
+        #     print('MyStackLayout child.height',child.height)    
+        #     if child.height>max:
+        #         max = child.height
+        #     sum = sum + child.height
+        
+        # self.height = sum 
 
         
         

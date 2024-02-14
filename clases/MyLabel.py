@@ -36,10 +36,10 @@ class MyLabel(Label):
                 print('self.texture_size[1]',self.texture_size[1])
                 self.size[1] = self.texture_size[1]
     
-        print(f'----------', self.text[0:100])
-        print(f'Высота size: {self.size}')
-        print(f'Высота text_size: {self.text_size}')
-        print(f'Высота texture_size: {self.texture_size}')
+        # print(f'----------', self.text[0:100])
+        # print(f'Высота size: {self.size}')
+        # print(f'Высота text_size: {self.text_size}')
+        # print(f'Высота texture_size: {self.texture_size}')
         if self.texture_size[1]:
          if self.texture_size[1]>10:
              delta = self.texture_size[1] - self.size[1]
@@ -71,9 +71,28 @@ class MyLabel(Label):
             pass
 
 
-        if self.parent is not None:
-            parent_type = type(self.parent).__name__
-            print('Parent type,height,width:', parent_type, self.parent.height, self.parent.width )
+         #для дебага
+        if (self.text).find('111111____11111___Lorem ipsum dolor')>-1:
+            if self.parent is not None:
+                self_parent=self.parent
+                parent_type = type(self_parent).__name__
+                print('Parent0 type,height,width:', parent_type, self_parent.height, self_parent.width )
+                if self.parent.parent is not None:
+                    self_parent=self.parent.parent
+                    parent_type = type(self_parent).__name__
+                    print('Parent.parent1 type,height,width:', parent_type, self_parent.height, self_parent.width )
+                    if self.parent.parent.parent is not None:
+                        self_parent=self.parent.parent.parent
+                        parent_type = type(self_parent).__name__
+                        print('Parent.parent.parent2 type,height,width:', parent_type, self_parent.height, self_parent.width )
+                        if self.parent.parent.parent.parent is not None:
+                            self_parent=self.parent.parent.parent.parent
+                            parent_type = type(self_parent).__name__
+                            print('Parent.parent.parent.parent3 type,height,width:', parent_type, self_parent.height, self_parent.width )
+                            if self.parent.parent.parent.parent.parent is not None:
+                                self_parent=self.parent.parent.parent.parent.parent
+                                parent_type = type(self_parent).__name__
+                                print('Parent.parent.parent.parent.parent4 type,height,width:', parent_type, self_parent.height, self_parent.width )
 
 
 
