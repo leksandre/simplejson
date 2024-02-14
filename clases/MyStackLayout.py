@@ -13,6 +13,7 @@ class MyStackLayout(StackLayout):
         self.bind(minimum_height=self.setter('height'))
         self.bind(height=self.setter('height'))
         self.bind(children=self._on_children_changed)
+        # self.size_hint_y = None
 
     def _on_children_changed(self, instance, value):
         children = self.children

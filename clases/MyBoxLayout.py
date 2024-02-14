@@ -10,8 +10,9 @@ class MyBoxLayout(BoxLayout):
         self.componentMbst = componentMbst
         self.bind(minimum_height=self.setter('height'))
         self.bind(height=self.setter('height'))
-        self.bind(size=self._update_background)
-        # self.height=0# начнём c нуля, чтоль# и пропадут элементы не имеющие свойтсва "размер"
+        self.size_hint_y = None #((вот где собака порылась с авторазмерами ячеек))
+        # self.bind(size=self._update_background)
+        # self.height=0# начнём c нуля, чтоль# !!!!!!!!ошибка!!  пропадут элементы не имеющие свойтсва "размер"
         # self.padding=1
         # self.spacing=1
         if componentMbst:
@@ -27,7 +28,19 @@ class MyBoxLayout(BoxLayout):
     def add_widget(self, widget, index=0):
         super(MyBoxLayout, self).add_widget(widget, index)
         self.do_layout()
-        
+
+    def _update_background(self, instance, value):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            # Генерация случайного цвета
+            r, g, b = random(), random(), random()
+            Color(r, g, b, 1)
+            # Рисование прямоугольника с цветом фона
+            Rectangle(pos=self.pos, size=self.size)
+
+
+
+            
         # self.height = self.height + 60
         
         # self.height = 10
@@ -53,12 +66,3 @@ class MyBoxLayout(BoxLayout):
             # self.height = max
             # if self.componentMbst:
             #     print('Carousel final height',self.height,self.componentMbst['properties']['backendname'])
-
-    def _update_background(self, instance, value):
-        self.canvas.before.clear()
-        with self.canvas.before:
-            # Генерация случайного цвета
-            r, g, b = random(), random(), random()
-            Color(r, g, b, 1)
-            # Рисование прямоугольника с цветом фона
-            Rectangle(pos=self.pos, size=self.size)

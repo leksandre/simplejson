@@ -8,6 +8,7 @@ from clases.MyFloatLayout import MyFloatLayout
 from clases.MyCarousel import MyCarousel
 from clases.MyButton import MyButton
 from clases.MyLabel import MyLabel
+from clases.MyLabelScroll import MyLabelScroll
 from clases.MyStackLayout import MyStackLayout
 
 from kivy.app import App

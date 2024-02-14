@@ -21,7 +21,7 @@ class MyCarousel(Carousel):
         self.componentMbst = componentMbst
         self.bind(children=self._on_children_changed)
         self.bind(height=self.setter('height'))
-
+        # self.size_hint_y = None
     def _on_children_changed(self, instance, value):
         children = self.children
         
