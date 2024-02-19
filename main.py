@@ -607,7 +607,8 @@ def processHtOnComponent(component, loopdata):
                             index1 = try_parse_int(p_ht[3])
                             if index1:
                              if index1 not in my_dict[p_ht[2]]:
-                                 print('error index',h)
+                                 pass
+                                #  print('error index',h)
                              if index1 in my_dict[p_ht[2]]:
                               if isinstance(my_dict[p_ht[2]][index1],dict):
                                 if p_ht[4] in my_dict[p_ht[2]][p_ht[3]]:

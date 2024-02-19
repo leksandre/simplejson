@@ -72,7 +72,9 @@ class MyLabel(Label):
 
 
          #для дебага
-        if (self.text).find('111111____11111___Lorem ipsum dolor')>-1:
+        # if False:
+        if True:
+          if (self.text).find('111111____11111___Lorem ipsum dolor')>-1:
             if self.parent is not None:
                 self_parent=self.parent
                 parent_type = type(self_parent).__name__
@@ -93,6 +95,10 @@ class MyLabel(Label):
                                 self_parent=self.parent.parent.parent.parent.parent
                                 parent_type = type(self_parent).__name__
                                 print('Parent.parent.parent.parent.parent4 type,height,width:', parent_type, self_parent.height, self_parent.width )
+                                if self.parent.parent.parent.parent.parent.parent is not None:
+                                    self_parent=self.parent.parent.parent.parent.parent.parent
+                                    parent_type = type(self_parent).__name__
+                                    print('Parent.parent.parent.parent.parent.parent5 type,height,width:', parent_type, self_parent.height, self_parent.width )
 
 
 
