@@ -69,11 +69,12 @@ class MyLabel(Label):
         except KeyError as e:
             print(' over KeyError  ' + str(e))
             pass
+        self._log_parent()
 
-
+    def _log_parent(self):
          #для дебага
-        # if False:
-        if True:
+        if False:
+        # if True:
           if (self.text).find('111111____11111___Lorem ipsum dolor')>-1:
             if self.parent is not None:
                 self_parent=self.parent
