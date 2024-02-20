@@ -8,12 +8,13 @@ from clases.MyFloatLayout import MyFloatLayout
 from clases.MyCarousel import MyCarousel
 from clases.MyButton import MyButton
 from clases.MyLabel import MyLabel
+from clases.MyTextInput import MyTextInput
 from clases.MyLabelScroll import MyLabelScroll
 from clases.MyStackLayout import MyStackLayout
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
+
 from kivy.uix.videoplayer import VideoPlayerAnnotation
 from kivy.uix.videoplayer import VideoPlayer
 from kivy.storage.jsonstore import JsonStore
@@ -552,9 +553,17 @@ def draw_mbst_text(component):
     return label
     
 def draw_mbst_text_area(component):
-    textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True)
+    textinput = MyTextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True)
+
+        # textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True,
+                            #    line_height=50,height=200)
+    
     # textinput.bind(on_text_validate=on_enter)
     # textinput.bind(text=on_text)
+
+
+    # textinput = MyLabel(text=component['properties'].get('text', ""), componentMbst = component)#
+
     return textinput
 
 def draw_mbst_link(component):
