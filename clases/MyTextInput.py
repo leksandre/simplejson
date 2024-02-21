@@ -8,29 +8,44 @@ class MyTextInput(TextInput):
         super(MyTextInput, self).__init__(**kwargs)
         self.componentMbst = componentMbst
         self.bind(on_text=self.on_text)
-        self.height=200
-        self.line_height=250
+        self.multiline=True
+        self.do_wrap=True
+        self.size_hint_y=None
+        self.height=30
+
         self.text = text
-
-        self.bind(size=self._update_size)#цвет плашек чтоб наглядно видеть
-        self.bind(width=self._update_widht)#логи изменений размера
-        self.bind(height=self._update_height)#логи изменений размера
+        # print('try self.text', text)
+        # print('set self.text', self.text)
 
 
+        # self.bind(size=self._update_size)#цвет плашек чтоб наглядно видеть
+        # self.bind(width=self._update_widht)#логи изменений размера
+        # self.bind(height=self._update_height)#логи изменений размера
+        # self. =  250
+        # print('minimum_height', self.minimum_height)
+        # print('readonly', self.readonly)
+
+
+        # self.line_height=50
+        # print('minimum_height', self.minimum_height)
+        # print('height', self.height)
+
+        self._log_parent()
+        
     def _update_height(self, instance, value):
-        print('_update_height')
+        print('_update_height',self.height, self.text)
 
     def _update_widht(self, instance, value):
-        print('_update_widht')
+        print('_update_widht',self.width, self.text)
 
     def _update_size(self, instance, value):
-        print('_update_size')
+        print('_update_size',self.size, self.text)
 
     def on_text(self, instance, value):
-        print('on_text')
-        self.minimum_height = self.height
+        print('on_text', self.text)
+        # self.minimum_height = self.height
         
-        self._log_parent()
+        
 
     def _log_parent(self):
          #для дебага

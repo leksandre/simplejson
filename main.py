@@ -553,7 +553,8 @@ def draw_mbst_text(component):
     return label
     
 def draw_mbst_text_area(component):
-    textinput = MyTextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True)
+    # print('draw_mbst_text_area',component)
+    textinput = MyTextInput(text=component['properties'].get('defaultvalue', ""), componentMbst = component)
 
         # textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True,
                             #    line_height=50,height=200)
@@ -850,7 +851,15 @@ def processComponent(component, size_hint = 0, loopdata = {}):
         uixCmp = createComponentUix(el, size_hint, loopdata=loopdata)   
 
         if uixCmp:
-            try:
+            try:        
+                #porcess css
+                if len(el.get("css",{}).get("all",[]))>0:
+                    all = el["css"]["all"][0]
+                    print('componentMbst css all', all)
+                    if len(all.get("rules",{}).get("background-color",[]))>0:
+                        color = all["rules"]["background-color"]
+                        print('componentMbst color', color)
+                        
                 pass
                 # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
                 # uixCmp.height = 120
@@ -992,7 +1001,7 @@ def parseScreen(screen):
 
         
 
-
+# потом вынести в библиотеку классов
 # будем класть в корень ScrollView, но, если что, можно и BoxLayout, для некоторых реализаций он будет даже удобнее, главное не забыть положить на него наш ScrollView
 class ScrollableContent(ScrollView):#BoxLayout
     def __init__(self, screen, **kwargs):
