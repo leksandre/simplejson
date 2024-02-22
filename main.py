@@ -1076,10 +1076,11 @@ class ScrollableContent(ScrollView):#BoxLayout
         self.size_hint=(1, 1)
 
         #надо как-то задать главный фон
-        if False:
+        if True:
             with self.canvas.before:
                 # color = "#FFFFFF"
-                color = (1, 1, 1, 0.1)
+                # color = (1, 1, 1, 0.1)
+                color = "#efeff4"
                 Color(color)  # RGBA
                 self.rect = Rectangle(pos=self.pos, size=self.size)
             self.bind(pos=self.update_rect, size=self.update_rect)

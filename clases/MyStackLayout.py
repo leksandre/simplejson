@@ -43,8 +43,9 @@ class MyStackLayout(StackLayout):
         # попробуем обрабатывать свойства элементов "генерально" (но лучше переделать на "индивитдуально")
         #porcess css
         el = self.componentMbst
-        color = "#FFFFFF"
-        color = (1,1,1,0.1)
+        # color = "#337ab7"#для кнопок
+        color = "#efeff4"
+        # color = (1,1,1,0.1)
         if len(el.get("css",{}).get("all",[]))>0:
             for all in el["css"]["all"]:
                 # print('componentMbst css all', all)
@@ -55,7 +56,7 @@ class MyStackLayout(StackLayout):
                     if color.find("#")==0:
                         color = (color)
                     else:
-                        print('origштфд color', color)
+                        print('original color', color)
                         color =  (0, 0, 0)
 
                     if len(all.get("selector",[]))>0:
