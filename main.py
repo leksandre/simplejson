@@ -22,6 +22,7 @@ from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
 from kivy.uix.scrollview import ScrollView
 
+from kivy.graphics import Color, Rectangle
 
 # import cv2
 import sys
@@ -423,8 +424,8 @@ def draw_mbst_slider_slide(component, loopdata={}):
 
                     
 def draw_mbst_slider(component, loopdata={}): #has items!
-    # print("------component Slider Carousel ['css']",component['css'])
-    carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50, componentMbst = component )
+    # print("------component Slider Carousel ['css']",component['css']) #, opacity=0.50
+    carousel = MyCarousel(direction='right',size_hint = (1, None), componentMbst = component )
     
     
     # carousel = MyBoxLayout(orientation='vertical',size_hint = (1, None), opacity=0.50 )
@@ -851,15 +852,76 @@ def processComponent(component, size_hint = 0, loopdata = {}):
         uixCmp = createComponentUix(el, size_hint, loopdata=loopdata)   
 
         if uixCmp:
-            try:        
-                #porcess css
-                if len(el.get("css",{}).get("all",[]))>0:
-                    all = el["css"]["all"][0]
-                    print('componentMbst css all', all)
-                    if len(all.get("rules",{}).get("background-color",[]))>0:
-                        color = all["rules"]["background-color"]
-                        print('componentMbst color', color)
-                        
+            try:    
+                
+            
+                #универсальная обработка css для всех компонентов
+ # попробуем обрабатывать свойства элементов "генерально" (но лучше переделать на "индивитдуально", для каждого класса - свой обработчик)
+        #porcess css
+                # if len(el.get("css",{}).get("all",[]))>0:
+                #     for all in el["css"]["all"]:
+                #         # print('componentMbst css all', all)
+                #         #pocess background-color
+                #         if len(all.get("rules",{}).get("background-color",[]))>0:
+                #             color = all["rules"]["background-color"]
+
+                #             if color.find("#")==0:
+                #                 color = (color)
+                #             else:
+                #                 color =  (0, 0, 0)
+
+                #             if len(all.get("selector",[]))>0:
+                #                 parent_type = type(self).__name__
+                #                 print('selector',all["selector"],parent_type)
+                                        
+                        # задаём канвас каждому комопненту
+                        # if uixCmp:
+                        #     color = "#FFFFFF"
+                        #     print('componentMbst canvas', color)
+                        #     with uixCmp.canvas.before:
+                        #         Color(color)
+                        #         Rectangle(pos=uixCmp.pos, size=uixCmp.size)
+                                                
+
+                        # # проверяем свойства
+                        #     if hasattr(uixCmp, 'background_color'):
+                        #         print('componentMbst background_color', color)
+                        #         uixCmp.background_color = color #(1, 1, 1, 1)   #"white" #(1, 1, 1, 1) #
+                        #     else:
+                        #         if hasattr(uixCmp, 'background'):
+                        #             print('componentMbst background', color)
+                        #             uixCmp.background = color #(1, 1, 1, 1) #(color)
+                        #         else:
+                        #             print('componentMbst canvas', color)
+                        #             with uixCmp.canvas.before:
+                        #                 Color(color)
+                        #                 Rectangle(pos=uixCmp.pos, size=uixCmp.size)
+                        #             uixCmp.bind(pos=uixCmp.update_rect, size=uixCmp.update_rect)
+
+#надо как-то задать главный фон
+        # if content_layout:
+        #             color = "#FFFFFF"
+        #             print('componentMbst canvas', color)
+        #             with content_layout.canvas.before:
+        #                 Color(color)
+        #                 Rectangle(pos=content_layout.pos, size=content_layout.size)
+
+#надо как-то задать главный фон
+        # if content_layout:
+        #             # color = "#FFFFFF"
+        #             color = (0.9, 0.4, 0.6, 1)
+        #             with content_layout.canvas.before:
+        #                 Color(color)
+        #                 Rectangle(pos=content_layout.pos, size=content_layout.size)
+                            
+
+
+
+
+
+
+
+
                 pass
                 # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
                 # uixCmp.height = 120
@@ -1004,14 +1066,28 @@ def parseScreen(screen):
 # потом вынести в библиотеку классов
 # будем класть в корень ScrollView, но, если что, можно и BoxLayout, для некоторых реализаций он будет даже удобнее, главное не забыть положить на него наш ScrollView
 class ScrollableContent(ScrollView):#BoxLayout
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+        
     def __init__(self, screen, **kwargs):
         super(ScrollableContent, self).__init__(**kwargs)
         self.orientation = 'vertical'
         self.size_hint=(1, 1)
 
+        #надо как-то задать главный фон
+        if False:
+            with self.canvas.before:
+                # color = "#FFFFFF"
+                color = (1, 1, 1, 0.1)
+                Color(color)  # RGBA
+                self.rect = Rectangle(pos=self.pos, size=self.size)
+            self.bind(pos=self.update_rect, size=self.update_rect)
+        
+
         content_layout = MyBoxLayout(orientation='vertical', size_hint=(1, None))#, spacing=0
         # content_layout.bind(minimum_height=content_layout.setter('height'))
-        
+
         foundHt = extractHtFromDict(screen)
         hashtags = getHashTags(screen.get("id", 0),foundHt)
         for el in screen['attributes']['components']:

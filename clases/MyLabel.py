@@ -17,7 +17,7 @@ class MyLabel(Label):
         super(MyLabel, self).__init__(**kwargs)
         self.componentMbst = componentMbst
       
-        self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
+        # self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
         self.bind(width=self._update_size)#логи изменений размера
         self.bind(texture_size=self._update_texture_size)
                 
@@ -28,7 +28,7 @@ class MyLabel(Label):
         self.halign='center' 
         self.valign='center'
         self.multiline = True
-
+        self.color=(0, 0, 0, 1)
         self.text = text
      
     def _update_texture_size(self, instance, value):
@@ -107,7 +107,7 @@ class MyLabel(Label):
         self.canvas.before.clear()
         with self.canvas.before:
             r, g, b = random(), random(), random()
-            Color(r, g, b, 1)
+            Color(r, g, b, 0.8)
             Rectangle(pos=self.pos, size=self.size)
 
 
