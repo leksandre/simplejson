@@ -50,6 +50,18 @@ class MyStackLayout(StackLayout):
             for all in el["css"]["all"]:
                 # print('componentMbst css all', all)
                 #pocess background-color
+                if not isinstance(all,dict):
+                    # print('componentMbst css all not is dick', all)
+                    print('componentMbst css all not is dick', type(all))
+                    continue
+                
+                if isinstance(all,list):
+                    print('componentMbst css all is list', all)
+                    continue
+                if isinstance(all.get("rules",{}),list):
+                    print('componentMbst css all rules is list', all.get("rules",{}))
+                    continue
+                
                 if len(all.get("rules",{}).get("background-color",[]))>0:
                     color = all["rules"]["background-color"]
 

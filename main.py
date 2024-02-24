@@ -604,8 +604,12 @@ def processHtOnComponent(component, loopdata):
                 if p_ht[1].lower() in loopdata:
                     my_dict = loopdata[p_ht[1].lower()]
                     if p_ht[2] in my_dict:
-                        if 'backend@files'==p_ht[2]:
-                            print('backend@files',h,type(my_dict[p_ht[2]]))
+                        
+                        # разобрат  ли?
+                        # самое странное куча хештегов а в хранилище нет их значений 
+                        # if 'backend@files'==p_ht[2]:
+                        #     print('backend@files',h,type(my_dict[p_ht[2]]))
+                        
                         if isinstance(my_dict[p_ht[2]],dict):
                           if p_ht[3] in my_dict[p_ht[2]]:
                               text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]])
@@ -862,6 +866,17 @@ def processComponent(component, size_hint = 0, loopdata = {}):
                 #     for all in el["css"]["all"]:
                 #         # print('componentMbst css all', all)
                 #         #pocess background-color
+                            # if not isinstance(all,dict):
+                            #     # print('componentMbst css all not is dick', all)
+                            #     print('componentMbst css all not is dick', type(all))
+                            #     continue
+                            
+                            # if isinstance(all,list):
+                            #     print('componentMbst css all is list', all)
+                            #     continue
+                            # if isinstance(all.get("rules",{}),list):
+                            #     print('componentMbst css all rules is list', all.get("rules",{}))
+                            #     continue
                 #         if len(all.get("rules",{}).get("background-color",[]))>0:
                 #             color = all["rules"]["background-color"]
 

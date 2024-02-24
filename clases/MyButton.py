@@ -38,7 +38,7 @@ class MyButton(Button):
         color = "#337ab780"
         if len(el.get("css",{}).get("all",[]))>0:
             for all in el["css"]["all"]:
-                # 
+                # print('componentMbst css all', all)
                 #pocess background-color
                 if not isinstance(all,dict):
                     # print('componentMbst css all not is dick', all)
