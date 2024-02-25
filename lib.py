@@ -2,6 +2,7 @@ class Lib():
    def getProperty(el,name):
         # попробуем обрабатывать свойства элементов "генерально" (но лучше переделать на "индивитдуально")
         #porcess css
+      if isinstance(el,dict):
         if len(el.get("css",{}).get("all",[]))>0:
             for all in el["css"]["all"]:
                 # print('componentMbst css all', all)
@@ -32,6 +33,17 @@ class Lib():
                         print('selector',all["selector"],parent_type)
                     return color
         return None
+      
+   def formatData(t,s):
+        if not isinstance(t,dict) and not isinstance(t,list):
+            print ("\t"*s+str(t)[0:200])
+            pass
+        else:
+            for key in t:
+                print ("\t"*s+str(key)[0:200])
+                if not isinstance(t,list):
+                  Lib.formatData(t[key],s+1)
+                  pass
 
 
 

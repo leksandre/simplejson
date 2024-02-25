@@ -24,6 +24,8 @@ from kivy.uix.scrollview import ScrollView
 
 from kivy.graphics import Color, Rectangle
 
+from lib import Lib
+
 # import cv2
 import sys
 # import m3u8
@@ -217,19 +219,37 @@ def getScreens(tables=[]):
     global structable
     Headers = { 'Authorization' : "Bearer "+str(access_token) }
     
-    listId = 0
-
-    r = simpleRequest(isGet=True, url = urlD+url_l+f"?ApplicationId={AppId}&page=1&pageSize=200", headers=Headers)
-
-    try:
-        if not r:
-            print('r',r)
-            return False
-        data = r.json()
-    except:
-        return False
     
-    data = r.json()
+    #добавить проверку "даты последенего изменения 'набора' листов", да и вообще проверять все извлекаемые из стора данные
+    listId = 0
+    if store.exists('screenslast'):
+        data1 = store.get('screenslast')
+        if False:
+        # if True:
+            print('--------------  screenslast store data keys:', data1['data'].keys())
+            Lib.formatData(data1['data'],0)
+        data = data1['data']
+
+    else:
+        r = simpleRequest(isGet=True, url = urlD+url_l+f"?ApplicationId={AppId}&page=1&pageSize=200", headers=Headers)
+
+        try:
+            if not r:
+                print('r',r)
+                return False
+            data = r.json()
+        except:
+            return False
+
+        if False:
+        # if True:
+            print('--------------  screenslast simpleRequest data keys:', data.keys())
+            Lib.formatData(data,0)
+        
+        
+        store.put('screenslast', name='screenslast',data=data)
+    
+    
     # print('data json 1',data)
     
     # for dataList in data['meta']:
@@ -1095,7 +1115,11 @@ class TestApp(App):
     # def exitApp2(self):
     #     print('The button 2 is being pressed')
     #     exit() 
-    
+
+    def __init__(self, i=0, **kwargs):
+        super(TestApp, self).__init__(**kwargs)
+        self.i = i
+        
     def exitApp(self, instance):
         print('The Exit button <%s> is being pressed' % instance.text)
         exit()
@@ -1110,12 +1134,19 @@ class TestApp(App):
             else:   
                 if 'data' in dat:
                     screens = dat['data']
+                    i = 0
                     for screen in screens:
-                        return  parseScreen(screen)        
+                        if i == self.i:
+                            return  parseScreen(screen)  
+                        i=i+1
+                              
         btn2e = MyButton(text='some failed, exit')
         btn2e.bind(on_press=self.exitApp)
         return btn2e
 
 
 if __name__ == '__main__':
-    TestApp().run()
+    TestApp(i=0).run()
+    # for i in range(20):
+    #     time.sleep(15)
+    #     TestApp(i=i).run()
