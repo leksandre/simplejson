@@ -2,6 +2,7 @@ import kivy
 kivy.require('1.0.7')
 from kivy.uix.stacklayout import StackLayout
 from kivy.graphics import Color, Rectangle
+from lib import Lib
 
 class MyStackLayout(StackLayout):
     def add_widget(self, widget, index=0):
@@ -46,41 +47,32 @@ class MyStackLayout(StackLayout):
         # color = "#337ab7"#для кнопок
         color = "#efeff4"
         # color = (1,1,1,0.1)
-        if len(el.get("css",{}).get("all",[]))>0:
-            for all in el["css"]["all"]:
-                # print('componentMbst css all', all)
-                #pocess background-color
-                if not isinstance(all,dict):
-                    # print('componentMbst css all not is dick', all)
-                    print('componentMbst css all not is dick', type(all))
-                    continue
-                
-                if isinstance(all,list):
-                    print('componentMbst css all is list', all)
-                    continue
-                if isinstance(all.get("rules",{}),list):
-                    print('componentMbst css all rules is list', all.get("rules",{}))
-                    continue
-                
-                if len(all.get("rules",{}).get("background-color",[]))>0:
-                    color = all["rules"]["background-color"]
 
-                    if color.find("#")==0:
-                        color = (color)
-                    else:
-                        print('original color', color)
-                        color =  (0, 0, 0)
-
-                    if len(all.get("selector",[]))>0:
-                        parent_type = type(self).__name__
-                        print('selector',all["selector"],parent_type)
-
+        foundColor = Lib.getProperty(el, "background-color")
+        if foundColor:
+            color = foundColor
         print('componentMbst canvas', color)
+        
         with self.canvas.before:
             Color(color)
             # Rectangle(pos=self.pos, size=self.size)
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self.update_rect, size=self.update_rect)
+        
+        
+        
+        
+
+
+
+
+
+
+
+
+
+
+
                                       
                 # задаём канвас каждому комопненту
                 # if uixCmp:
