@@ -879,7 +879,7 @@ def processComponent(component, size_hint = 0, loopdata = {}):
         if uixCmp:
             try:    
                 
-                #соберем статистику по свойствам цсс
+                #соберем статистику по свойствам цсс # какое свойство, на каком компоненте
                 if len(el.get("css",{}).get("all",[]))>0:
                     # print('len css:',len(el["css"]["all"]))
                     for all in el["css"]["all"]:
@@ -906,12 +906,25 @@ def processComponent(component, size_hint = 0, loopdata = {}):
                                     else:
                                         propCss[el1] = 1
                                         # print("el1 new",el1)
-
+                                        
+                                        
+                                    type1 = type(uixCmp).__name__
+                                    if len(type1)>0:
+                                        key_str = el1+"_"+str(type1)
+                                        if key_str in propCss.keys():
+                                            propCss[key_str] = propCss[key_str]+1
+                                        else:
+                                            propCss[key_str] = 1
+                                            
+                                        
                             # if len(all.get("selector",[]))>0:
                             #     parent_type = type(uixCmp).__name__
                             #     print('selector',all["selector"],parent_type)
 
-
+                    # foundColor = Lib.getProperty(el, "background-color")
+                    # if foundColor:
+                    #     color = foundColor
+                    #     print('componentMbst canvas foundColor', color)
                 pass
                 # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
                 # uixCmp.height = 120

@@ -38,10 +38,10 @@ class MyButton(Button):
         el = self.componentMbst
         color = "#337ab780"
         
-        foundColor = Lib.getProperty(el, "background-color")
-        if foundColor:
-            color = foundColor
-            print('componentMbst canvas foundColor', color)
+        # foundColor = Lib.getProperty(el, "background-color")
+        # if foundColor:
+        #     color = foundColor
+        #     print('componentMbst canvas foundColor', color)
 
 
         print('componentMbst canvas', color)
