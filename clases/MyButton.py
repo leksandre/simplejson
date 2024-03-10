@@ -41,7 +41,7 @@ class MyButton(Button):
         foundColor = Lib.getProperty(el, "background-color")
         if foundColor:
             color = foundColor
-        print('componentMbst canvas', color)
+            print('componentMbst canvas foundColor', color)
 
 
         print('componentMbst canvas', color)
