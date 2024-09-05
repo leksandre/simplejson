@@ -1,6 +1,7 @@
 import kivy
 kivy.require('1.0.7')
 from kivy.uix.label import Label
+# from clases.MyLabel import MyLabel
 # from clases.MyBoxLayout import MyBoxLayout
 # from kivy.uix.boxlayout import BoxLayout
 # from kivy.uix.anchorlayout import AnchorLayout
@@ -9,142 +10,121 @@ from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle
 import time
 from kivy.clock import Clock
+from kivy.uix.scrollview import ScrollView
+
 from random import random
 # from clases.MyAnchorLayout import MyAnchorLayout
 
-class MyLabel(Label):
+
+class MyLabelForScroll(Label):
     def __init__(self, text, componentMbst=False, **kwargs):
-        super(MyLabel, self).__init__(**kwargs)
+        super(MyLabelForScroll, self).__init__(**kwargs)
         self.componentMbst = componentMbst
-      
-        # self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
+        
         self.bind(width=self._update_size)#логи изменений размера
         self.bind(texture_size=self._update_texture_size)
-                
-        self.height = 100
-        # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
-        
+        self.bind(size=self._update_background)#цвет плашек чтоб наглядно видеть
+        # self.height = 10
         self.size_hint = (1, None)
         self.halign='center' 
         self.valign='center'
         self.multiline = True
-        self.color=(0, 0, 0, 1)
         self.text = text
-     
+ 
     def _update_texture_size(self, instance, value):
-        def update_text():
-                print('self.texture_size[1]',self.texture_size[1])
-                self.size[1] = self.texture_size[1]
-    
-        # print(f'----------', self.text[0:100])
-        # print(f'Высота size: {self.size}')
-        # print(f'Высота text_size: {self.text_size}')
-        # print(f'Высота texture_size: {self.texture_size}')
         if self.texture_size[1]:
          if self.texture_size[1]>10:
-             delta = self.texture_size[1] - self.size[1]
-             self.size[1] = self.texture_size[1]
+            #  delta = self.texture_size[1] - self.size[1]
             #  print('delta',delta)
-            #  self.text_size[1] = self.texture_size[1]
-            #  self.spacing = delta
-            #  if delta > 0:
-            #     #  self.height = self.texture_size[1]
-            #      self.height = self.height
-            #  if delta < 0:
-            #     #  self.height = self.texture_size[1]
-            #      self.height = self.height-1
-            
-        # # self.size[1] = self.texture_size[1]
-        # if self.texture_size[1]:
-        #  if self.texture_size[1]>10:
-        #     # print('self.texture_size[1]',self.texture_size[1])
-        #     # self.height = self.texture_size[1]
-        #     Clock.schedule_once(lambda dt: update_text(), 2)
+             self.size[1] = self.texture_size[1]
+            #  if self.parent is not None:
+            #     print('self.parent.size[1]',self.parent.size[1])
+                
+                 
         
     def _update_size(self, instance, value):
         try:
-            #чтб текст переносился по строкам
             if self.size[0]>10:
                 self.text_size[0] = self.size[0]
+            # print(f'----------', self.text[0:100])
+            # print(f'Высота size: {self.size}')
+            # print(f'Высота text_size: {self.text_size}')
+            # print(f'Высота texture_size: {self.texture_size}')
         except KeyError as e:
             print(' over KeyError  ' + str(e))
             pass
-        self._log_parent()
-
-    def _log_parent(self):
-         #для дебага
-        if False:
-        # if True:
-          if (self.text).find('111111____11111___Lorem ipsum dolor')>-1:
-            if self.parent is not None:
-                self_parent=self.parent
-                parent_type = type(self_parent).__name__
-                print('Parent0 type,height,width:', parent_type, self_parent.height, self_parent.width )
-                if self.parent.parent is not None:
-                    self_parent=self.parent.parent
-                    parent_type = type(self_parent).__name__
-                    print('Parent.parent1 type,height,width:', parent_type, self_parent.height, self_parent.width )
-                    if self.parent.parent.parent is not None:
-                        self_parent=self.parent.parent.parent
-                        parent_type = type(self_parent).__name__
-                        print('Parent.parent.parent2 type,height,width:', parent_type, self_parent.height, self_parent.width )
-                        if self.parent.parent.parent.parent is not None:
-                            self_parent=self.parent.parent.parent.parent
-                            parent_type = type(self_parent).__name__
-                            print('Parent.parent.parent.parent3 type,height,width:', parent_type, self_parent.height, self_parent.width )
-                            if self.parent.parent.parent.parent.parent is not None:
-                                self_parent=self.parent.parent.parent.parent.parent
-                                parent_type = type(self_parent).__name__
-                                print('Parent.parent.parent.parent.parent4 type,height,width:', parent_type, self_parent.height, self_parent.width )
-                                if self.parent.parent.parent.parent.parent.parent is not None:
-                                    self_parent=self.parent.parent.parent.parent.parent.parent
-                                    parent_type = type(self_parent).__name__
-                                    print('Parent.parent.parent.parent.parent.parent5 type,height,width:', parent_type, self_parent.height, self_parent.width )
-
 
 
     def _update_background(self, instance, value):
         self.canvas.before.clear()
         with self.canvas.before:
             r, g, b = random(), random(), random()
-            Color(r, g, b, 0.8)
+            Color(r, g, b, 1)
             Rectangle(pos=self.pos, size=self.size)
 
 
 
 
-  # 
-              #label
-        # self.bind(size=self._update_size)
-
-
-        #так было
+class MyLabelScroll(ScrollView):
+    def __init__(self, text, componentMbst=False, **kwargs):
+        super(MyLabelScroll, self).__init__(**kwargs)
+        self.componentMbst = componentMbst
+        # self.bind(width=self._update_size)# пслучайный цвет бэкграунда
         # self.size_hint = (1, None)
-        # self.text = text
-        # self.height = 40
-        # text_size=(1, 1)
-        # self.halign='center' 
-        # self.valign='center'
-        # self.multiline = True
+        self.size_hint = (1, 1)
+        self.halign='center' 
+        self.valign='center'
+        self.multiline = True
+
+        label = MyLabelForScroll(text=text)
+        # label.size_hint_max = (1, None)
+        label.text_size=(None, None)
+        label.halign='center' 
+        label.valign='center'
+        # label.bind(size=lambda instance, value: setattr(self, 'text_size', value))
+        label.bind(size=lambda instance, value: setattr(self, 'text_size', value))
+        self.add_widget(label)
+
+    
+    def _update_size(self, instance, value):
+        # pass
+
+        with self.canvas.before:
+            r, g, b = random(), random(), random()
+            Color(r, g, b, 1)
+            Rectangle(pos=self.pos, size=self.size)
+
+
+
+    # 
         # self.size_hint = (1, None)
-        # self.bind(texture_size=lambda instance, value: setattr(self, 'text_size', value))
-        # self.bind(texture_size=lambda instance, value: setattr(self, 'size', value))
-
-
-
-        # self.bind(texture_size=lambda instance, value: setattr(instance, 'size', value))
-
-        # новая версия
+        # self.canvas.before.clear()
             
+
+        # try:
+
+        #     if self.size[0]>10:
+        #         self.text_size[0] = self.size[0]
+
+        # except KeyError as e:
+        #     print(' over KeyError  ' + str(e))
+        #     pass
 
 
         # if self.parent is not None:
         #     parent_type = type(self.parent).__name__
-        #     print('Parent type:', parent_type, self.parent.width, self.text[:20] )
-        #     # if parent_type=="MyBoxLayout":
-                
-        #     # self.size_hint_max = self.parent.size_hint 
-        #     # self.width = self.parent.width
+        #     print('Parent type:', parent_type, self.parent.width )
+            # if parent_type=="MyBoxLayout":
+                # self.size_hint_max = self.parent.size_hint 
+                # self.height = self.parent.height/3 
+
+
+
+    # def _update_texture_size(self, instance, value):
+    #     def update_text():
+    #             print('self.texture_size[1]',self.texture_size[1])
+    #             self.size[1] = self.texture_size[1]
+
 
             
         #     pass
@@ -153,9 +133,6 @@ class MyLabel(Label):
         #     # self.size_hint_max = (1, None)
         #     pass
 
-
-
-        
     # def set_random_background(self):
     #     with self.canvas.before:
     #         # Генерация случайного цвета фона
@@ -171,63 +148,48 @@ class MyLabel(Label):
     #     instance.rect.size = instance.size
 
 
-            # if self.size[1]>10:
-            #     self.text_size[1] = self.size[1]
+        # def update_text():
+        #         print('self.texture_size[1]',self.texture_size[1])
+        #         self.size[1] = self.texture_size[1]
 
-            # time.sleep(0.001)
-
-  
-
-                # нельзя менять забинденое свойство в его бинде
-                # self.text_size = self.texture_size
-                # self.size = self.text_size
-                # self.size = self.texture_size
-            
-
-                    # self.canvas.before.clear()
+   #label
+        # self.bind(size=self._update_size)
+        #так было
         # self.size_hint = (1, None)
-        # pass
-            
-
-
-               # self.text_size=(None, None) 
-        
+        # self.text = text
+        # self.height = 40
+        # text_size=(1, 1)
+        # self.halign='center' 
+        # self.valign='center'
+        # self.multiline = True
+        # self.size_hint = (1, None)
+        # self.bind(texture_size=lambda instance, value: setattr(self, 'text_size', value))
+        # self.bind(texture_size=lambda instance, value: setattr(self, 'size', value))
+        # self.bind(texture_size=lambda instance, value: setattr(instance, 'size', value))
+        # новая версия
+        # self.bind(texture_size=self._update_texture_size)   
+        # self.height = 120
+        # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
+        # self.text = text
+        # self.text_size=(None, None) 
         # self.bind(size=lambda instance, value: setattr(self, 'text_size', value))# перенос строк
-
-
         #всякая херня
         # self.bind(size=lambda instance, value: setattr(self, 'width', value[0]))# перенос строк
         # self.bind(texture_size=lambda instance, value: setattr(self, 'height', value[1]))
         # self.bind(texture_size=self.setter('size'))
   # self.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
-       
         #   label = Label(text=text, size_hint=(1, None), height=30, text_size=(None, None), halign='left')
         # self.text_size=(1, 1)
 
-
-
-      
-
-
-        
-        
         # def update_text():
         #             self.text = text
         # Clock.schedule_once(lambda dt: update_text(), 2)
-
-
 
         # def update_text():
         #      print('self.texture_size',self.texture_size)
         #      self.height = self.height +1
         # Clock.schedule_once(lambda dt: update_text(), 2)
 
-    
-        
-
-
-        
-        
         #ScrollView
         # self.height = 40
         # self.size_hint = (1, None)
@@ -235,14 +197,8 @@ class MyLabel(Label):
         # self.anchor_y='center'
         # # self.opacity = 0
         # self.size_hint = (1, None)
-        # label = Label(text=text)
-        # # label.size_hint_max = (1, None)
-        # label.text_size=(None, None)
-        # label.halign='center'  # Выравнивание текста по центру
-        # label.valign='center'
-        # # label.bind(size=lambda instance, value: setattr(self, 'text_size', value))
-        # label.bind(size=lambda instance, value: setattr(self, 'text_size', value))
-        # self.add_widget(label)
+
+
         
         
   
@@ -325,3 +281,27 @@ class MyLabel(Label):
         # label.size_hint = (1, None)
     
     #log
+
+        # print(f'----------', self.text[0:100])
+        # print(f'Высота size: {self.size}')
+        # print(f'Высота text_size: {self.text_size}')
+        # print(f'Высота texture_size: {self.texture_size}')
+        # if self.texture_size[1]:
+        #  if self.texture_size[1]>10:
+        #      delta = self.texture_size[1] - self.size[1]
+            #  print('delta',delta)
+            #  self.text_size[1] = self.texture_size[1]
+            #  self.spacing = delta
+            #  if delta > 0:
+            #     #  self.height = self.texture_size[1]
+            #      self.height = self.height
+            #  if delta < 0:
+            #     #  self.height = self.texture_size[1]
+            #      self.height = self.height-1
+            
+        # # self.size[1] = self.texture_size[1]
+        # if self.texture_size[1]:
+        #  if self.texture_size[1]>10:
+        #     # print('self.texture_size[1]',self.texture_size[1])
+        #     # self.height = self.texture_size[1]
+        #     Clock.schedule_once(lambda dt: update_text(), 2)

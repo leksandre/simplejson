@@ -4,14 +4,17 @@ kivy.require('1.0.7')
 from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
 
 from clases.MyBoxLayout import MyBoxLayout
+from clases.MyFloatLayout import MyFloatLayout
 from clases.MyCarousel import MyCarousel
 from clases.MyButton import MyButton
 from clases.MyLabel import MyLabel
+from clases.MyTextInput import MyTextInput
+from clases.MyLabelScroll import MyLabelScroll
 from clases.MyStackLayout import MyStackLayout
 
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
+
 from kivy.uix.videoplayer import VideoPlayerAnnotation
 from kivy.uix.videoplayer import VideoPlayer
 from kivy.storage.jsonstore import JsonStore
@@ -19,6 +22,9 @@ from kivy.uix.image import AsyncImage
 from kivy.uix.image import Image
 from kivy.uix.scrollview import ScrollView
 
+from kivy.graphics import Color, Rectangle
+
+from lib import Lib
 
 # import cv2
 import sys
@@ -213,19 +219,37 @@ def getScreens(tables=[]):
     global structable
     Headers = { 'Authorization' : "Bearer "+str(access_token) }
     
-    listId = 0
-
-    r = simpleRequest(isGet=True, url = urlD+url_l+f"?ApplicationId={AppId}&page=1&pageSize=200", headers=Headers)
-
-    try:
-        if not r:
-            print('r',r)
-            return False
-        data = r.json()
-    except:
-        return False
     
-    data = r.json()
+    #добавить проверку "даты последенего изменения 'набора' листов", да и вообще проверять все извлекаемые из стора данные
+    listId = 0
+    if store.exists('screenslast'):
+        data1 = store.get('screenslast')
+        if False:
+        # if True:
+            print('--------------  screenslast store data keys:', data1['data'].keys())
+            Lib.formatData(data1['data'],0)
+        data = data1['data']
+
+    else:
+        r = simpleRequest(isGet=True, url = urlD+url_l+f"?ApplicationId={AppId}&page=1&pageSize=200", headers=Headers)
+
+        try:
+            if not r:
+                print('r',r)
+                return False
+            data = r.json()
+        except:
+            return False
+
+        if False:
+        # if True:
+            print('--------------  screenslast simpleRequest data keys:', data.keys())
+            Lib.formatData(data,0)
+        
+        
+        store.put('screenslast', name='screenslast',data=data)
+    
+    
     # print('data json 1',data)
     
     # for dataList in data['meta']:
@@ -311,7 +335,7 @@ def auth(force = False):
         return False
     return r
 
-def processComponents(component, ui_components):
+def processComponents(component, ui_components, loopdata={}):
     if 'components' in component:
         
     #  #debug   
@@ -331,16 +355,20 @@ def processComponents(component, ui_components):
         #         print("elemData",elemData['properties']['backendname'])
                 
         if 1:
-            foradding = processComponent(elemData)
-            if foradding:
-                ui_components[0].add_widget(foradding)
+            foradding = processComponent(elemData, loopdata=loopdata)
+            addItTo(ui_components[0], foradding)
     
 
 
+def addItTo(loca, foradding):
+    if foradding:  
+        if isinstance(foradding,list):
+            for iten in foradding:
+                loca.add_widget(iten)
+        else:
+            loca.add_widget(foradding)
 
-
-
-def processItems(component, ui_components):
+def processItems(component, ui_components, loopdata={}):
     if 'items' in component:
       fullColWidth = 12# мы так давным давно решили
         
@@ -361,9 +389,11 @@ def processItems(component, ui_components):
             curColWidth = int(elem['properties']['colwidth'])/fullColWidth
     
        # варинат 1 отправляем в "конвейер", т.е. создаём "бокс" для каждого элемента из items и обрабатываем его содержимое соответственно "линейно", но без влияния на родительский компонент
-       foradding = processComponent(elem, size_hint = curColWidth)
-       if foradding:
-        ui_components[0].add_widget(foradding)
+       foradding = processComponent(elem, size_hint = curColWidth, loopdata=loopdata)
+       addItTo(ui_components[0], foradding)
+    #    if foradding:
+    #     ui_components[0].add_widget(foradding)
+    
         
        # вариант 2 сами реагируем на структуру компонента пропуская обработку элементов "обёрток" mbst-slider__slide mbst-flexrow__col
     #    if 'components' in elem:
@@ -386,7 +416,7 @@ def processItems(component, ui_components):
 #     processComponents(component,[elem])
 #     return elem
 
-def draw_mbst_slider_slide(component):
+def draw_mbst_slider_slide(component, loopdata={}):
     elem = MyBoxLayout(orientation='vertical',size_hint=(1, None), componentMbst = component)#, minimum_height=10, spacing=20
     # elem.bind(minimum_width=elem.setter('width'))
     # elem.bind(minimum_height=elem.setter('height'))
@@ -413,15 +443,15 @@ def draw_mbst_slider_slide(component):
         
 
                     
-def draw_mbst_slider(component): #has items!
-    # print("------component Slider Carousel ['css']",component['css'])
-    carousel = MyCarousel(direction='right',size_hint = (1, None), opacity=0.50, componentMbst = component )
+def draw_mbst_slider(component, loopdata={}): #has items!
+    # print("------component Slider Carousel ['css']",component['css']) #, opacity=0.50
+    carousel = MyCarousel(direction='right',size_hint = (1, None), componentMbst = component )
     
     
     # carousel = MyBoxLayout(orientation='vertical',size_hint = (1, None), opacity=0.50 )
     
     # carousel.bind(minimum_height=carousel.setter('height'))
-    processItems(component,[carousel])
+    processItems(component,ui_components=[carousel], loopdata=loopdata)
     # TabbedPanel #??????
     
      # вручную высчитываем необходимую высоту элемента
@@ -435,7 +465,7 @@ def draw_mbst_slider(component): #has items!
            
     return carousel
 
-def draw_mbst_flexrow_col(component, size_hint = 0):
+def draw_mbst_flexrow_col(component, size_hint = 0, loopdata={}):
     # print("component Col ['css']",component['css'])
     
     #debug
@@ -477,10 +507,10 @@ def draw_mbst_flexrow_col(component, size_hint = 0):
     return elem
 
 
-def draw_mbst_flexrow(component): #has items!
+def draw_mbst_flexrow(component, loopdata={}): #has items!
     layout = MyStackLayout(orientation='lr-tb', size_hint=(1, None), componentMbst = component) #, minimum_height=100, size_hint=(None, None), size=(400, 400)
     
-    processItems(component,[layout])
+    processItems(component, ui_components = [layout], loopdata=loopdata)
     
      # вручную высчитываем необходимую высоту элемента
     # if 'backendname' in component['properties']:
@@ -512,14 +542,14 @@ def draw_mbst_image(component):
     if component.get('properties', {}).get('image', {}).get('url', {}):
         try:
             this_url = component['properties']['image']['url']
-            print("-------component properties ['properties']['image']'url' ", this_url)
+            print("-------component properties 0 ['properties']['image']'url' ", this_url)
         except KeyError as e:
             print(' KeyError  ' + str(e))
     else:    
       try:
         if component.get('properties', {}).get('image', {}).get('attributes', {}).get('Url', {}):
             this_url = component['properties']['image']['attributes']['Url']
-            print("-------component properties ['properties']['image']['attributes']'url' ", this_url)
+            print("-------component properties 1 ['properties']['image']['attributes']'url' ", this_url)
       except AttributeError as e:
             print(' KeyError  ' + str(e))
         
@@ -544,9 +574,18 @@ def draw_mbst_text(component):
     return label
     
 def draw_mbst_text_area(component):
-    textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True)
+    # print('draw_mbst_text_area',component)
+    textinput = MyTextInput(text=component['properties'].get('defaultvalue', ""), componentMbst = component)
+
+        # textinput = TextInput(text=component['properties'].get('text', ""), multiline=True, do_wrap=True,
+                            #    line_height=50,height=200)
+    
     # textinput.bind(on_text_validate=on_enter)
     # textinput.bind(text=on_text)
+
+
+    # textinput = MyLabel(text=component['properties'].get('text', ""), componentMbst = component)#
+
     return textinput
 
 def draw_mbst_link(component):
@@ -556,7 +595,14 @@ def draw_mbst_link(component):
     # widget.bind(on_ref_press=print_it)
     return widget
 
-def processHtOnComponent(component):
+def try_parse_int(value):
+    try:
+        result = int(value)
+        return result
+    except ValueError:
+        return None
+    
+def processHtOnComponent(component, loopdata):
     
     text = json.dumps(component)
     ht = extractHtFromDict(text)
@@ -570,6 +616,56 @@ def processHtOnComponent(component):
                 if p_ht[1] in ht_v:
                     # print('tag found ',h,'=>',p_ht[1],'=>',ht_v.get(p_ht[1]))
                     text = text.replace('#'+h+'#',ht_v.get(p_ht[1]))
+
+
+            # работа с за лупами
+            if p_ht[0].lower()=='loop':
+                # print('ht loop --',h)
+                if p_ht[1].lower() in loopdata:
+                    my_dict = loopdata[p_ht[1].lower()]
+                    if p_ht[2] in my_dict:
+                        
+                        # разобрат  ли?
+                        # самое странное куча хештегов а в хранилище нет их значений 
+                        # if 'backend@files'==p_ht[2]:
+                        #     print('backend@files',h,type(my_dict[p_ht[2]]))
+                        
+                        if isinstance(my_dict[p_ht[2]],dict):
+                          if p_ht[3] in my_dict[p_ht[2]]:
+                              text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]])
+
+                        if isinstance(my_dict[p_ht[2]],str):
+                              text = text.replace('#'+h+'#',my_dict[p_ht[2]])
+
+                        if isinstance(my_dict[p_ht[2]],list):
+                            # print('ht list loop --',h)
+                            index1 = try_parse_int(p_ht[3])
+                            if index1:
+                             if index1 not in my_dict[p_ht[2]]:
+                                 pass
+                                #  print('error index',h)
+                             if index1 in my_dict[p_ht[2]]:
+                              if isinstance(my_dict[p_ht[2]][index1],dict):
+                                if p_ht[4] in my_dict[p_ht[2]][p_ht[3]]:
+                                    text = text.replace('#'+h+'#',my_dict[p_ht[2]][p_ht[3]][p_ht[4]])
+
+                        # if isinstance(my_dict[p_ht[2]],int):
+                        #   print('ht loop --',h, p_ht[2], my_dict[p_ht[2]]) 
+                        # else:        
+                        #   if len(my_dict[p_ht[2]])>0:
+                        #     print('ht loop --',h, p_ht[2], my_dict[p_ht[2]]) 
+
+
+
+
+
+                    # print('ht loop count vals --',len(my_dict))
+                    # first_key = next(iter(my_dict))
+                    # first_value = my_dict[first_key]
+                    # print('ht loop vals --',first_value )
+                    
+                    
+
             # else:
             #     print('tag not found',('#'+p_ht[0].lower()+'#'))
 
@@ -586,19 +682,19 @@ def processHtOnComponent(component):
     return component
 
 
-def createComponentUix(el, size_hint=0):
+def createComponentUix(el, size_hint=0, loopdata={}):
     if not 'name' in el:
         return False
     # отрисовываем компоненты и возврщаем их вызвавшему родительскому компоненту
     if el['name'] == 'mbst-flexrow':
-        return draw_mbst_flexrow(el)
+        return draw_mbst_flexrow(el, loopdata=loopdata)
     if el['name'] == 'mbst-slider':
-        return draw_mbst_slider(el)
+        return draw_mbst_slider(el, loopdata=loopdata)
     # подэлементы от flexrow и slider
     if el['name'] == 'mbst-flexrow__col':
-        return draw_mbst_flexrow_col(el, size_hint)
+        return draw_mbst_flexrow_col(el, size_hint, loopdata=loopdata)
     if el['name'] == 'mbst-slider__slide':
-        return draw_mbst_slider_slide(el) 
+        return draw_mbst_slider_slide(el, loopdata=loopdata) 
 
 
     if 'items' in el:
@@ -630,7 +726,7 @@ def getLoopDataset(nameDataset):
     #     if key == nameDataset:
     #         print('!!!!!!!!!')
      
-    print('dataSource - try to get', nameDataset)
+    # print('dataSource - try to get', nameDataset)
 
     #  for k,v in store.find(name=nameDataset):
     #      print('dataSource - k', k)
@@ -643,13 +739,13 @@ def getLoopDataset(nameDataset):
     # for k,v in store.find(name=nameDataset): # cтал приводить хранилище в к нижнему регистру и сразу это перестало работать
     for k, v in store.find(): # прихордиться руками перебирать стор
       if k == nameDataset:# прихордиться руками перебирать стор
-        print('-------- store item', key)
-        if 1:
-            print('dataSource found')
-            print('dataSource len k', len(k))
-            print('dataSource type k', type(k))
-            print('dataSource len v', len(v))
-            print('dataSource type v', type(v))
+        # print('-------- store item', key)
+        # if 1:
+        #     print('dataSource found')
+        #     print('dataSource len k', len(k))
+        #     print('dataSource type k', type(k))
+        #     print('dataSource len v', len(v))
+        #     print('dataSource type v', type(v))
 
         # print('!!!!!!!!!')
         if isinstance(v, str):
@@ -658,19 +754,19 @@ def getLoopDataset(nameDataset):
             print(f"k = {k}") # здесь имя которое мы задали в name когда мы сохраняли в store
         if isinstance(v, dict):
             for v0 in v.items():
-                print(f"v0 = {type(v0)}")
+                # print(f"v0 = {type(v0)}")
                 if isinstance(v0, tuple):
                     for element in v0:
                         # print(type(element))
-                        if isinstance(element, str):
-                            print(type(element), " 1 -- 200 ",element[0:200]) # здесь открывается секция data
+                        # if isinstance(element, str):
+                        #     print(type(element), " 1 -- 200 ",element[0:200]) # здесь открывается секция data
                         if isinstance(element, list):
                             if isinstance(element[0], list):
-                                try:
-                                    print(" type [0] ", type(element[0]), " [0][0] ", type(element[0][0]))
-                                except:
-                                    print(f'ValueError row ')
-                                    continue
+                                # try:
+                                #     print(" type [0] ", type(element[0]), " [0][0] ", type(element[0][0]))
+                                # except:
+                                #     print(f'ValueError row ')
+                                #     continue
                                 # if isinstance(element[0][0], dict):
                                 if 1:
                                     for line in element[0]:
@@ -701,10 +797,11 @@ def getLoopDataset(nameDataset):
         #             print(f'ValueError row '+ str(e))
         #             continue
             
-            
-    
-def processComponent(component, size_hint = 0):
+global propCss         
+propCss = {}
 
+def processComponent(component, size_hint = 0, loopdata = {}):
+    global propCss  
     # for elem in component:
     #     print('-component',elem)
     # print('-component properties',component['properties'])
@@ -728,6 +825,9 @@ def processComponent(component, size_hint = 0):
     #     if 'dataSource' in el['loop']:
     #         print('- loop dataSource',el['loop']['dataSource'])
     
+    aliasName = ''
+    loopdataGenerator = [{}]
+
     isloop = False
     if 'properties' in el:
         if 'loop' in el['properties']:
@@ -740,41 +840,102 @@ def processComponent(component, size_hint = 0):
                         aliasName = (el['properties']['loop']['aliasName']).lower() 
 
                         # print( '- dataSource loop properties',nameDataset)
+                        # print( '- dataSource loop properties',aliasName)
                         # loopdataGenerator = getLoopDataset(nameDataset) # передават по цепочке генератор или передавать весь лист значений?
 
-                        itemsLoop = list(getLoopDataset(nameDataset)) # пока поработам с обычнцми листами, потом если что, перейдем на генераторы (один хер объёмы резевируемой памяти не изменяться)
-                        # pprint.pprint( itemsLoop) 
-                        
+                        loopdataGenerator = list(getLoopDataset(nameDataset)) # пока поработам с обычнцми листами, потом если что, перейдем на генераторы (один хер объёмы резевируемой памяти не изменяться)
+                        # pprint.pprint( loopdataGenerator) 
                         # print('loopdataGenerator:',type(loopdataGenerator))
-                    
-                        # for line1 in loopdataGenerator:
-                        #     pprint.pprint( line1)
 
-    
-    
+                         
+
+
+
+    # if loopdata:
+    #     print('loopdata',len(loopdata))
     # print('css',el['css'])
     # print('config',el['config'])
     # if 'uuid' in el:
     #     print('uuid',el['uuid'])
-    
-    el = processHtOnComponent(el)#заменяем хештеги
+                        
+    uixCmpList = []                    
+    for line1 in loopdataGenerator:
 
-    uixCmp = createComponentUix(el, size_hint)
-    if uixCmp:
-        
-        try:
-            pass
-            # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
-            # uixCmp.height = 120
-            # uixCmp.line_height = 120 # Label.line_height
-            # uixCmp.line_height = 120 # TextInput.line_height
-            # uixCmp.minimum_height = 120 # TextInput.minimum_height
-            #Widget.height
-            # uixCmp.size_hint=(1, None)
-        except AttributeError:
-            pass
-        
-        return uixCmp
+        # pprint.pprint('line1', line1)
+        # if aliasName:
+        #     print('____aliasName____', aliasName)
+
+        if len(aliasName)>0:
+            loopdata[aliasName] = line1 # да, блин, кажется надо сохранять все данные для лупа в лист и никаких генераторов... вроде бы
+
+        #было
+        # el = processHtOnComponent(el)#заменяем хештеги
+        # uixCmp = createComponentUix(el, size_hint)
+
+        #стало, переходим на лупы
+        el = processHtOnComponent(el, loopdata=loopdata)#заменяем хештеги
+        uixCmp = createComponentUix(el, size_hint, loopdata=loopdata)   
+
+        if uixCmp:
+            try:    
+                
+                #соберем статистику по свойствам цсс # какое свойство, на каком компоненте
+                if len(el.get("css",{}).get("all",[]))>0:
+                    # print('len css:',len(el["css"]["all"]))
+                    for all in el["css"]["all"]:
+                            # print('componentMbst css all', all)
+                            
+                            #pocess background-color
+                            if not isinstance(all,dict):
+                                # print('componentMbst css all not is dick', all)
+                                print('componentMbst css all not is dick', type(all))
+                                continue
+                            if isinstance(all,list):
+                                print('componentMbst css all is list', all)
+                                continue
+                            if isinstance(all.get("rules",{}),list):
+                                print('componentMbst css all rules is list', all.get("rules",{}))
+                                continue
+                            
+                            if len(all.get("rules",{}))>0:
+                                # print(all["rules"])
+                                for el1 in  all["rules"]:
+                                    if el1 in propCss.keys():
+                                        propCss[el1] = propCss[el1]+1
+                                        # print("el1 exist",el1)
+                                    else:
+                                        propCss[el1] = 1
+                                        # print("el1 new",el1)
+                                        
+                                        
+                                    type1 = type(uixCmp).__name__
+                                    if len(type1)>0:
+                                        key_str = el1+"_"+str(type1)
+                                        if key_str in propCss.keys():
+                                            propCss[key_str] = propCss[key_str]+1
+                                        else:
+                                            propCss[key_str] = 1
+                                            
+                                        
+                            # if len(all.get("selector",[]))>0:
+                            #     parent_type = type(uixCmp).__name__
+                            #     print('selector',all["selector"],parent_type)
+
+                    # foundColor = Lib.getProperty(el, "background-color")
+                    # if foundColor:
+                    #     color = foundColor
+                    #     print('componentMbst canvas foundColor', color)
+                pass
+                # uixCmp.minimum_height = 20 # BoxLayout.minimum_height  #GridLayoutminimum_height 
+                # uixCmp.height = 120
+                # uixCmp.line_height = 120 # Label.line_height
+                # uixCmp.line_height = 120 # TextInput.line_height
+                # uixCmp.minimum_height = 120 # TextInput.minimum_height
+                #Widget.height
+                # uixCmp.size_hint=(1, None)
+            except AttributeError:
+                pass
+            uixCmpList.append(uixCmp) #тут тоже можно возврщать генератор, но надо ли....
         
     
     # try:
@@ -782,7 +943,7 @@ def processComponent(component, size_hint = 0):
     #     print('!-name',el['name'])
     # except AttributeError:
     #     pass
-    return False
+    return uixCmpList
 
 
 
@@ -886,6 +1047,12 @@ def extractHtFromDict(screen):
 def parseScreen(screen):
     scrollable_content = ScrollableContent(screen)
     
+    if 1:
+        global propCss    
+        pprint.pprint(propCss)          
+        # for x in propCss:
+        #     print (x)
+            
     # если понадобится дополнительный коневрой элемент 
     # root_layout = MyBoxLayout(orientation='vertical', size_hint=(1, 1))
     # root_layout.bind(minimum_height=root_layout.setter('height'))
@@ -905,24 +1072,40 @@ def parseScreen(screen):
 
         
 
-
+# потом вынести в библиотеку классов
 # будем класть в корень ScrollView, но, если что, можно и BoxLayout, для некоторых реализаций он будет даже удобнее, главное не забыть положить на него наш ScrollView
 class ScrollableContent(ScrollView):#BoxLayout
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+        
     def __init__(self, screen, **kwargs):
         super(ScrollableContent, self).__init__(**kwargs)
         self.orientation = 'vertical'
         self.size_hint=(1, 1)
 
+        #надо как-то задать главный фон
+        if True:
+            with self.canvas.before:
+                # color = "#FFFFFF"
+                # color = (1, 1, 1, 0.1)
+                color = "#efeff4"
+                Color(color)  # RGBA
+                self.rect = Rectangle(pos=self.pos, size=self.size)
+            self.bind(pos=self.update_rect, size=self.update_rect)
+        
+
         content_layout = MyBoxLayout(orientation='vertical', size_hint=(1, None))#, spacing=0
         # content_layout.bind(minimum_height=content_layout.setter('height'))
-        
+
         foundHt = extractHtFromDict(screen)
         hashtags = getHashTags(screen.get("id", 0),foundHt)
         for el in screen['attributes']['components']:
             foradding = processComponent(el)
-            if foradding:
-                
-            # когда нужно посмотреть "широким взглядом" мы расскоментируем "ктулху"
+            addItTo(content_layout, foradding)
+
+            # когда нужно посмотреть "широким взглядом" мы закомментируем предидущю строку и расскоментируем "ктулху"
+            # if foradding:
             #   boxcontainer = MyBoxLayout(orientation='vertical', size_hint=(0.5, None), spacing=10, padding=(12,12))
             #   for i in range(5):
             #     button = MyButton(text=f'Button {i}', size_hint=(1, None), height=10, width=10, padding=(2,2))
@@ -930,8 +1113,9 @@ class ScrollableContent(ScrollView):#BoxLayout
             #     boxcontainer.do_layout()
             #   boxcontainer.do_layout()
             #   content_layout.add_widget(boxcontainer)
-                
-              content_layout.add_widget(foradding)
+            #   content_layout.add_widget(foradding)
+
+              
         self.add_widget(content_layout)    
 
         # scroll_view = ScrollView(size_hint=(1, 1))
@@ -944,7 +1128,11 @@ class TestApp(App):
     # def exitApp2(self):
     #     print('The button 2 is being pressed')
     #     exit() 
-    
+
+    def __init__(self, i=0, **kwargs):
+        super(TestApp, self).__init__(**kwargs)
+        self.i = i
+        
     def exitApp(self, instance):
         print('The Exit button <%s> is being pressed' % instance.text)
         exit()
@@ -956,15 +1144,22 @@ class TestApp(App):
                 print('fail server!')
                 # exit()
                 # return False
-            if 'data' in dat:
-                screens = dat['data']
-                for screen in screens:
-                    return  parseScreen(screen)
-            
+            else:   
+                if 'data' in dat:
+                    screens = dat['data']
+                    i = 0
+                    for screen in screens:
+                        if i == self.i:
+                            return  parseScreen(screen)  
+                        i=i+1
+                              
         btn2e = MyButton(text='some failed, exit')
         btn2e.bind(on_press=self.exitApp)
         return btn2e
 
 
 if __name__ == '__main__':
-    TestApp().run()
+    TestApp(i=0).run()
+    # for i in range(20):
+    #     time.sleep(15)
+    #     TestApp(i=i).run()
