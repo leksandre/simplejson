@@ -23,6 +23,8 @@ from kivy.uix.image import Image
 from kivy.uix.scrollview import ScrollView
 
 from kivy.graphics import Color, Rectangle
+from kivy.utils import get_color_from_hex
+from kivy.core.text import LabelBase
 
 from lib import Lib
 
@@ -46,6 +48,137 @@ import pprint
 store = JsonStore(f'appid_{AppId}_objid_{ObjectId}')
 
 hashtags = []
+
+
+# Словарь соответствий CSS свойств и свойств Kivy
+css_to_kivy = {
+    'background-color': 'background_color',
+    'background-position-x': 'background_position_x',
+    'background-position-y': 'background_position_y',
+    'background-repeat': 'background_repeat',
+    'background-size': 'background_size',
+    'border-bottom-style': 'border_bottom_style',
+    'border-bottom-width': 'border_bottom_width',
+    'border-left-style': 'border_left_style',
+    'border-left-width': 'border_left_width',
+    'border-radius': 'border_radius',
+    'border-right-style': 'border_right_style',
+    'border-right-width': 'border_right_width',
+    'border-style': 'border_style',
+    'border-top-style': 'border_top_style',
+    'border-top-width': 'border_top_width',
+    'border-width': 'border_width',
+    'font-family': 'font_name',
+    'margin': 'padding',  # В Kivy используется padding вместо margin
+    'width': 'width',
+    'color': 'color',
+    'font-size': 'font_size',
+    'line-height': 'line_height',
+    'padding': 'padding',
+    'white-space': 'text_size',  # В Kivy используется text_size для управления переносом текста
+    'min-height': 'minimum_height',
+    'height': 'height',
+    'text-align': 'halign',
+    'font-style': 'font_style',
+    'font-weight': 'font_weight',
+    'background-image': 'background_image'
+}
+
+
+
+def convert_value(value):
+    if value.endswith('%'):
+        return float(value.replace('%', '')) / 100
+    elif value.endswith('px'):
+        return float(value.replace('px', ''))
+    elif value.endswith('em'):
+        return float(value.replace('em', '')) * 16  # Пример: 1em = 16px
+    else:
+        return float(value)
+
+def parse_rgba(value):
+    # Пример: rgba(0, 0, 0, 0)
+    value = value.replace('rgba(', '').replace(')', '').split(',')
+    return [float(v.strip()) / 255 for v in value[:3]] + [float(value[3].strip())]
+
+def resolve_font_name(font_name):
+    # Проверяем, доступен ли шрифт в системе
+    try:
+        LabelBase.register(None, font_name)
+        return font_name
+    except IOError:
+        print(f"Font '{font_name}' not found. Using default font.")
+        return 'Roboto'  # Используем шрифт по умолчанию
+        
+# Функция для преобразования CSS свойств в свойства Kivy
+def transform_css_to_kivy(uixCmp, propCssCurrnt):
+    print('transform_css_to_kivy   ---- ', type(uixCmp).__name__, propCssCurrnt)
+    for css_prop, value in propCssCurrnt.items():
+        kivy_prop = css_to_kivy.get(css_prop)
+        if kivy_prop:
+         try:
+            # if kivy_prop == 'background_color' or kivy_prop == 'color':
+            #     value = get_color_from_hex(value)
+            if kivy_prop == 'background_color' or kivy_prop == 'color':
+                if value.startswith('rgba'):
+                    value = parse_rgba(value)
+                else:
+                    value = get_color_from_hex(value)
+
+            elif kivy_prop in ['width', 'height', 'minimum_height', 'font_size', 'line_height']:
+                if value.endswith('%'):
+                    value = float(value.replace('%', '')) / 100
+                elif value.endswith('px'):
+                    value = float(value.replace('px', ''))
+                elif value.endswith('em'):
+                    value = float(value.replace('em', '')) * 16  # Пример: 1em = 16px
+            # elif kivy_prop == 'padding':
+            #     values = value.split()
+            #     if len(values) == 4:
+            #         value = [float(v.replace('%', '').replace('px', '')) / 100 if '%' in v else float(v.replace('px', '')) for v in values]
+            #     else:
+            #         if '%' in value:
+            #             value = float(value.replace('%', '')) / 100
+            #         else:
+            #             value = float(value.replace('px', ''))
+            
+            elif kivy_prop in ['padding', 'margin']:
+                values = value.split()
+                if len(values) == 4:
+                    value = [convert_value(v) for v in values]
+                else:
+                    value = convert_value(value)
+            elif kivy_prop == 'border_radius':
+                values = value.split()
+                if len(values) == 4:
+                    value = [convert_value(v) for v in values]
+                else:
+                    value = convert_value(value)
+
+            elif kivy_prop == 'font_size':
+                value = value.replace('px', '')
+                value = float(value)
+            elif kivy_prop == 'border_radius':
+                values = value.split()
+                if len(values) == 4:
+                    value = [float(v.replace('px', '')) for v in values]
+                else:
+                    value = float(value.replace('px', ''))
+            elif kivy_prop == 'background_image':
+                value = value.replace('url("', '').replace('")', '')
+            elif kivy_prop == 'text_size':
+                if value == 'nowrap':
+                    value = (None, None)  # Отключение переноса текста
+                else:
+                    value = (None, None)  # По умолчанию отключение переноса текста
+            elif kivy_prop == 'font_name':
+                value = resolve_font_name(value)
+
+            setattr(uixCmp, kivy_prop, value)
+         except Exception as e:
+                print(f"Error processing property '{css_prop}' with value '{value}': {e}")
+
+
 
 if store.exists('#object#'):
     hashtagsS =  store.get('#object#')
@@ -877,6 +1010,7 @@ def processComponent(component, size_hint = 0, loopdata = {}):
         uixCmp = createComponentUix(el, size_hint, loopdata=loopdata)   
 
         if uixCmp:
+            propCssCurrnt = {}
             try:    
                 
                 #соберем статистику по свойствам цсс # какое свойство, на каком компоненте
@@ -898,23 +1032,38 @@ def processComponent(component, size_hint = 0, loopdata = {}):
                                 continue
                             
                             if len(all.get("rules",{}))>0:
-                                # print(all["rules"])
-                                for el1 in  all["rules"]:
-                                    if el1 in propCss.keys():
-                                        propCss[el1] = propCss[el1]+1
-                                        # print("el1 exist",el1)
+                                print(all["rules"])
+                                for el1,val1 in  all["rules"].items():
+
+                                    if el1 in propCssCurrnt.keys():
+                                        propCssCurrnt[el1] = val1
+                                        print("el1 exist",el1,val1, propCssCurrnt[el1])
                                     else:
-                                        propCss[el1] = 1
-                                        # print("el1 new",el1)
+                                        propCssCurrnt[el1] = val1
+                                        # print("el1 new",el1,val1)
                                         
                                         
+                                    # type1 = type(uixCmp).__name__
+                                    # if len(type1)>0:
+                                    #     key_str = el1+"_"+str(type1)
+                                    #     if key_str in propCss.keys():
+                                    #         propCss[key_str] = propCss[key_str]+1
+                                    #     else:
+                                    #         propCss[key_str] = 1
+
                                     type1 = type(uixCmp).__name__
                                     if len(type1)>0:
-                                        key_str = el1+"_"+str(type1)
-                                        if key_str in propCss.keys():
-                                            propCss[key_str] = propCss[key_str]+1
-                                        else:
-                                            propCss[key_str] = 1
+                                        key_str = str(type1).replace("My","")
+                                        if key_str not in propCss.keys():
+                                            propCss[key_str] = {}
+                                            
+                                        propCss[key_str][el1] = val1
+                                        # if el1 in propCss[key_str].keys():
+                                        #     propCss[key_str][el1] = propCss[key_str][el1]+1
+                                        # else:
+                                        #     propCss[key_str][el1] = 1
+                                  
+
                                             
                                         
                             # if len(all.get("selector",[]))>0:
@@ -935,6 +1084,8 @@ def processComponent(component, size_hint = 0, loopdata = {}):
                 # uixCmp.size_hint=(1, None)
             except AttributeError:
                 pass
+
+            # transform_css_to_kivy(uixCmp,propCssCurrnt) # зпаускаем обработчик стилей CSS
             uixCmpList.append(uixCmp) #тут тоже можно возврщать генератор, но надо ли....
         
     
