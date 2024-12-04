@@ -1,7 +1,7 @@
 import kivy
 kivy.require('1.0.7')
 
-from some import API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
+from some import donotprocessstyles, API_KEY, pgdb, pguser, pgpswd, pghost, pgport, pgschema, url_a, url_l, urlD, log_e, pass_e, managers_chats_id, service_chats_id, AppId, ObjectId, url_hash_objects, url_hash_filters_events,url_refresh
 
 from clases.MyBoxLayout import MyBoxLayout
 from clases.MyFloatLayout import MyFloatLayout
@@ -104,15 +104,31 @@ def parse_rgba(value):
 def resolve_font_name(font_name):
     # Проверяем, доступен ли шрифт в системе
     try:
+        # Удаляем кавычки и пробелы
+        font_name = font_name.replace('"', '').replace("'", '').strip()
+        # Пробуем зарегистрировать шрифт
         LabelBase.register(None, font_name)
         return font_name
     except IOError:
         print(f"Font '{font_name}' not found. Using default font.")
         return 'Roboto'  # Используем шрифт по умолчанию
         
+
+def convert_value(value):
+    if value.endswith('%'):
+        return float(value.replace('%', '')) / 100 * 10
+    elif value.endswith('px'):
+        return float(value.replace('px', '')) # * 10
+    elif value.endswith('em'):
+        return float(value.replace('em', '')) * 16  * 10 # Пример: 1em = 16px
+    else:
+        return float(value)
+        
 # Функция для преобразования CSS свойств в свойства Kivy
 def transform_css_to_kivy(uixCmp, propCssCurrnt):
-    print('transform_css_to_kivy   ---- ', type(uixCmp).__name__, propCssCurrnt)
+    if donotprocessstyles:
+        return
+    print('transform_css_to_kivy ', type(uixCmp).__name__, propCssCurrnt)
     for css_prop, value in propCssCurrnt.items():
         kivy_prop = css_to_kivy.get(css_prop)
         if kivy_prop:
@@ -125,13 +141,19 @@ def transform_css_to_kivy(uixCmp, propCssCurrnt):
                 else:
                     value = get_color_from_hex(value)
 
-            elif kivy_prop in ['width', 'height', 'minimum_height', 'font_size', 'line_height']:
-                if value.endswith('%'):
-                    value = float(value.replace('%', '')) / 100
-                elif value.endswith('px'):
-                    value = float(value.replace('px', ''))
-                elif value.endswith('em'):
-                    value = float(value.replace('em', '')) * 16  # Пример: 1em = 16px
+            elif kivy_prop in ['width',  'minimum_height', 'font_size', 'line_height']: # 'height',
+                                value = convert_value(value)
+
+            # elif kivy_prop in ['width', 'height', 'minimum_height', 'font_size', 'line_height']:
+            #     if value.endswith('%'):
+            #         value = float(value.replace('%', '')) / 100
+            #     elif value.endswith('px'):
+            #         value = float(value.replace('px', ''))
+            #     elif value.endswith('em'):
+            #         value = float(value.replace('em', '')) * 16  # Пример: 1em = 16px
+
+
+
             # elif kivy_prop == 'padding':
             #     values = value.split()
             #     if len(values) == 4:
@@ -158,12 +180,7 @@ def transform_css_to_kivy(uixCmp, propCssCurrnt):
             elif kivy_prop == 'font_size':
                 value = value.replace('px', '')
                 value = float(value)
-            elif kivy_prop == 'border_radius':
-                values = value.split()
-                if len(values) == 4:
-                    value = [float(v.replace('px', '')) for v in values]
-                else:
-                    value = float(value.replace('px', ''))
+
             elif kivy_prop == 'background_image':
                 value = value.replace('url("', '').replace('")', '')
             elif kivy_prop == 'text_size':
@@ -173,6 +190,9 @@ def transform_css_to_kivy(uixCmp, propCssCurrnt):
                     value = (None, None)  # По умолчанию отключение переноса текста
             elif kivy_prop == 'font_name':
                 value = resolve_font_name(value)
+            
+            if value==False:
+                continue
 
             setattr(uixCmp, kivy_prop, value)
          except Exception as e:
@@ -1085,7 +1105,9 @@ def processComponent(component, size_hint = 0, loopdata = {}):
             except AttributeError:
                 pass
 
-            # transform_css_to_kivy(uixCmp,propCssCurrnt) # зпаускаем обработчик стилей CSS
+            
+            transform_css_to_kivy(uixCmp,propCssCurrnt) # зпаускаем обработчик стилей CSS
+            print('--------',el['properties'].get('text', ""))
             uixCmpList.append(uixCmp) #тут тоже можно возврщать генератор, но надо ли....
         
     
