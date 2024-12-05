@@ -4,14 +4,12 @@ from kivy.uix.button import Button
 from clases.MyBoxLayout import MyBoxLayout
 from kivy.uix.boxlayout import BoxLayout
 from lib import Lib
+from kivy.utils import get_color_from_hex
 
 class MyButton(Button):
     def __init__(self, text, componentMbst=False, **kwargs):
         super(MyButton, self).__init__(**kwargs)
         self.componentMbst = componentMbst
-        
- 
-        
         
         self.size_hint = (1, None)
         self.height = 30
@@ -30,7 +28,7 @@ class MyButton(Button):
 
 
 
-
+        self.setFont()
 
     def setColor(self):
         # попробуем обрабатывать свойства элементов "генерально" (но лучше переделать на "индивитдуально")
@@ -45,5 +43,19 @@ class MyButton(Button):
 
 
         print('componentMbst canvas', color)
-        self.background_color = color
+        self.background_color = get_color_from_hex(color)
+
+    def setFont(self):
+        # Устанавливаем шрифт и размер текста
+        self.font_size = '16sp'  # Устанавливаем размер текста в sp (scale-independent pixels)
+        self.font_name = 'Roboto'  # Устанавливаем шрифт (убедитесь, что шрифт доступен в системе)
+        self.halign = 'center'  # Центрируем текст по горизонтали
+        self.valign = 'center'  # Центрируем текст по вертикали
+
+
+        
+
+
+
+
 
