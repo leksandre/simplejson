@@ -2,6 +2,7 @@ import kivy
 kivy.require('1.0.7')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Rectangle
+from kivy.utils import get_color_from_hex
 from random import random
 
 class MyBoxLayout(BoxLayout):
@@ -11,7 +12,7 @@ class MyBoxLayout(BoxLayout):
         self.bind(minimum_height=self.setter('height'))
         self.bind(height=self.setter('height'))
         self.size_hint_y = None #((вот где собака порылась с авторазмерами ячеек))
-        # self.bind(size=self._update_background)
+        self.bind(size=self._update_background)
         # self.height=0# начнём c нуля, чтоль# !!!!!!!!ошибка!!  пропадут элементы не имеющие свойтсва "размер"
         # self.padding=1
         # self.spacing=1
@@ -24,7 +25,25 @@ class MyBoxLayout(BoxLayout):
             # if directionMbst=='column':#example
             #     orientation='vertical'
             self.orientation = orientation
+          propCssCurrnt = componentMbst.get('properties',[]).get('propCss',False) 
+          if propCssCurrnt:
 
+            print("--MyBoxLayout propCssCurrnt", propCssCurrnt)
+            for css_prop, value in propCssCurrnt.items():
+                    try:
+                        if css_prop == 'background-color':
+                            print("--MyBoxLayout background-color", value)
+    
+                            self.background_color = get_color_from_hex(value)
+                            with self.canvas.before:
+                                Color(*self.background_color)
+                                self.rect = Rectangle(size=self.size, pos=self.pos)
+
+                            self.bind(size=self._update_rect, pos=self._update_rect)
+
+                    except Exception as e:
+                            print(f"--MyBoxLayout Error processing property '{css_prop}' with value '{value}': {e}")
+                       
     def add_widget(self, widget, index=0):
         super(MyBoxLayout, self).add_widget(widget, index)
         self.do_layout()

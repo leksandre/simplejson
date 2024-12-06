@@ -29,7 +29,7 @@ if len(arguments)>1:
     urlD = 'https://viafdn-admin.mobsted.com/'
     AppId = 18
     ObjectId = 500
-    if arguments[1]=='v1=1':
+    if arguments[1]=='offstyle=1':
         donotprocessstyles = True
 else:
     urlD = 'https://test-admin.mobsted.ru/'

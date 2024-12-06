@@ -110,7 +110,7 @@ def resolve_font_name(font_name):
         LabelBase.register(None, font_name)
         return font_name
     except IOError:
-        print(f"Font '{font_name}' not found. Using default font.")
+        # print(f"Font '{font_name}' not found. Using default font.")
         return 'Roboto'  # Используем шрифт по умолчанию
         
 
@@ -128,7 +128,7 @@ def convert_value(value):
 def transform_css_to_kivy(uixCmp, propCssCurrnt):
     if donotprocessstyles:
         return
-    print('transform_css_to_kivy ', type(uixCmp).__name__, propCssCurrnt)
+    # print('transform_css_to_kivy ', type(uixCmp).__name__, propCssCurrnt)
     for css_prop, value in propCssCurrnt.items():
         kivy_prop = css_to_kivy.get(css_prop)
         if kivy_prop:
@@ -1052,12 +1052,12 @@ def processComponent(component, size_hint = 0, loopdata = {}):
                                 continue
                             
                             if len(all.get("rules",{}))>0:
-                                print(all["rules"])
+                                # print(all["rules"])
                                 for el1,val1 in  all["rules"].items():
 
                                     if el1 in propCssCurrnt.keys():
                                         propCssCurrnt[el1] = val1
-                                        print("el1 exist",el1,val1, propCssCurrnt[el1])
+                                        # print("el1 exist",el1,val1, propCssCurrnt[el1])
                                     else:
                                         propCssCurrnt[el1] = val1
                                         # print("el1 new",el1,val1)
@@ -1107,7 +1107,8 @@ def processComponent(component, size_hint = 0, loopdata = {}):
 
             
             transform_css_to_kivy(uixCmp,propCssCurrnt) # зпаускаем обработчик стилей CSS
-            print('--------',el['properties'].get('text', ""))
+            # print('--------',el['properties'].get('text', ""))
+            el['properties']['propCss'] = propCssCurrnt
             uixCmpList.append(uixCmp) #тут тоже можно возврщать генератор, но надо ли....
         
     

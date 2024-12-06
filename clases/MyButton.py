@@ -42,7 +42,7 @@ class MyButton(Button):
         #     print('componentMbst canvas foundColor', color)
 
 
-        print('componentMbst canvas', color)
+        # print('componentMbst canvas', color)
         self.background_color = get_color_from_hex(color)
 
     def setFont(self):
