@@ -12,11 +12,14 @@ class MyButton(Button):
         self.componentMbst = componentMbst
         
         self.size_hint = (1, None)
-        self.height = 30
+        self.height = 50
         
         self.text = text
-        
+
+        # Устанавливаем цвет по умолчанию
         self.setColor()
+
+        # self.setColor()
         # bad idea
         # self.spacing = 1 
         # self.padding=(20, 10, 20, 10)
@@ -30,11 +33,11 @@ class MyButton(Button):
 
         self.setFont()
 
-    def setColor(self):
+    def setColor(self, color='#347ab7'):
         # попробуем обрабатывать свойства элементов "генерально" (но лучше переделать на "индивитдуально")
         #porcess css
-        el = self.componentMbst
-        color = "#337ab780"
+        # el = self.componentMbst
+        # color = "#337ab780"
         
         # foundColor = Lib.getProperty(el, "background-color")
         # if foundColor:
@@ -47,7 +50,7 @@ class MyButton(Button):
 
     def setFont(self):
         # Устанавливаем шрифт и размер текста
-        self.font_size = '16sp'  # Устанавливаем размер текста в sp (scale-independent pixels)
+        self.font_size = '11sp'  # Устанавливаем размер текста в sp (scale-independent pixels)
         self.font_name = 'Roboto'  # Устанавливаем шрифт (убедитесь, что шрифт доступен в системе)
         self.halign = 'center'  # Центрируем текст по горизонтали
         self.valign = 'center'  # Центрируем текст по вертикали

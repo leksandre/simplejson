@@ -123,7 +123,81 @@ def convert_value(value):
         return float(value.replace('em', '')) * 16  * 10 # Пример: 1em = 16px
     else:
         return float(value)
-        
+
+
+# Функция для преобразования CSS свойств в свойства Kivy версия 2
+def transform_css_to_kivy_v2(uixCmp, propCssCurrnt):
+    if donotprocessstyles:  # Возможно, это должно быть `if not donotprocessstyles:`?
+        return
+
+    css_to_kivy = {
+        'background-color': 'background_color',
+        'color': 'color',
+        'width': 'width',
+        'minimum_height': 'minimum_height',
+        'font_size': 'font_size',
+        'line_height': 'line_height',
+        'padding': 'padding',
+        'margin': 'margin',
+        'border_radius': 'border_radius',
+        'background_image': 'background_image',
+        'text_size': 'text_size',
+        'font_name': 'font_name'
+    }
+
+    def get_color_from_hex(hex_value):
+        # Ваш код для преобразования шестнадцатеричного значения цвета в формат Kivy
+        pass
+
+    def parse_rgba(rgba_value):
+        # Ваш код для парсинга RGBA значений
+        pass
+
+    def convert_value(value):
+        # Ваш код для конвертации значений (например, процентов в числа)
+        pass
+
+    def resolve_font_name(font_name):
+        # Ваш код для разрешения имени шрифта
+        pass
+
+    for css_prop, value in propCssCurrnt.items():
+        kivy_prop = css_to_kivy.get(css_prop)
+        if kivy_prop:
+            try:
+                if kivy_prop in ['background_color', 'color']:
+                    if value.startswith('rgba'):
+                        value = parse_rgba(value)
+                    else:
+                        value = get_color_from_hex(value)
+                elif kivy_prop in ['width', 'minimum_height', 'font_size', 'line_height']:
+                    value = convert_value(value)
+                elif kivy_prop in ['padding', 'margin', 'border_radius']:
+                    values = value.split()
+                    if len(values) == 4:
+                        value = [convert_value(v) for v in values]
+                    else:
+                        value = convert_value(value)
+                elif kivy_prop == 'font_size':
+                    value = float(value.replace('px', ''))
+                elif kivy_prop == 'background_image':
+                    value = value.replace('url("', '').replace('")', '')
+                elif kivy_prop == 'text_size':
+                    if value == 'nowrap':
+                        value = (None, None)  # Отключение переноса текста
+                    else:
+                        value = (None, None)  # По умолчанию отключение переноса текста
+                elif kivy_prop == 'font_name':
+                    value = resolve_font_name(value)
+
+                if value is False:
+                    continue
+
+                setattr(uixCmp, kivy_prop, value)
+
+            except Exception as e:
+                print(f"Error processing property '{css_prop}' with value '{value}': {e}")
+                
 # Функция для преобразования CSS свойств в свойства Kivy
 def transform_css_to_kivy(uixCmp, propCssCurrnt):
     if donotprocessstyles:

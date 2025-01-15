@@ -25,8 +25,8 @@ class MyLabel(Label):
         # self.height = 10# так в viafdn не пропадают боксы в субфреймах, интересно почему?
         
         self.size_hint = (1, None)
-        self.halign='center' 
-        self.valign='center'
+        # self.halign='center' 
+        # self.valign='center'
         self.multiline = True
         self.color=(0, 0, 0, 1)
         self.text = text

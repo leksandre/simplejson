@@ -12,7 +12,9 @@ class MyBoxLayout(BoxLayout):
         self.bind(minimum_height=self.setter('height'))
         self.bind(height=self.setter('height'))
         self.size_hint_y = None #((вот где собака порылась с авторазмерами ячеек))
-        self.bind(size=self._update_background)
+
+        # self.bind(size=self._update_background)
+
         # self.height=0# начнём c нуля, чтоль# !!!!!!!!ошибка!!  пропадут элементы не имеющие свойтсва "размер"
         # self.padding=1
         # self.spacing=1
